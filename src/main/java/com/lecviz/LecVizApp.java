@@ -49,6 +49,7 @@ public class LecVizApp extends Application {
         SCENES.put("dictionary", PDSDictionaryScene::new);
         SCENES.put("priorityq",  PDSPriorityQueueScene::new);
         SCENES.put("graph",      PDSGraphScene::new);
+        SCENES.put("arraysv2",  PDSArraySceneV2::new); 
     }
 
     @Override

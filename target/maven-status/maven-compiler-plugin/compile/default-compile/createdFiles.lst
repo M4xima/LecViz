@@ -34,6 +34,7 @@ com/lecviz/mobjects/TextMob.class
 com/lecviz/mobjects/LaTeXMob.class
 com/lecviz/core/Scene.class
 com/lecviz/scenes/PDSGraphScene.class
+com/lecviz/scenes/PDSArraySceneV2.class
 com/lecviz/parser/PPTXParser$ParsedSlide.class
 com/lecviz/generator/AutoSceneBuilder.class
 com/lecviz/mobjects/LinkedListMob.class
