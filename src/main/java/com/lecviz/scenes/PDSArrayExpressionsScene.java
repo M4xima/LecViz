@@ -140,22 +140,33 @@ public class PDSArrayExpressionsScene extends Scene {
         }
         hold(0.9);
 
-        // ── Formula and big statement, centered, formula above ──
+        // ── The view pans down and zooms in very slightly to center on
+        //    the strip, as if the frame itself were sliding down; the
+        //    title exits as though left behind by that motion — mirrors
+        //    the pan-right used later for the column. ──
+        cameraToWith(0, stripY, 1.1, 1.4, new FadeOut(title, 1.4));
+        remove(title);
+        hold(0.3);
+
+        // ── Formula and big statement, centered on the panned view,
+        //    written below the strip ──
         LaTeXMob rowFormula = new LaTeXMob("\\mathbf{\\text{addr}(A[r][c]) = base + (r \\times 4 + c) \\times size}")
                 .setSize(36).setLatexColor(Colors.WHITE);
-        rowFormula.setPosition(0, -60);
+        rowFormula.setPosition(0, 460);
         add(rowFormula);
         play(new Write(rowFormula, 2.0));
         hold(1.2);
 
         StrokeTextMob rowBig = bigStatement("All elements of a row are stored together");
+        rowBig.setPosition(0, 550);
         play(new Write(rowBig, 2.4));
         hold(2.2);
 
-        // ── Transition: the formula + statement slide off to the right
-        //    while fading, at the same moment the strip regroups back
-        //    into a 4-row grid shifted left to make room for the column
-        //    that's coming. Everything moves together, nothing is cut. ──
+        // ── Transition: camera eases back to the normal view while the
+        //    formula + statement slide off to the right and fade, and at
+        //    the same moment the strip regroups back into a 4-row grid
+        //    shifted left to make room for the column that's coming.
+        //    Everything moves together, nothing is cut. ──
         double gridCenterX = -350;
         double gx0 = gridCenterX - (SIZE - 1) * cell / 2.0;
         double gy0 = -60 - (SIZE - 1) * cell / 2.0;
@@ -177,7 +188,7 @@ public class PDSArrayExpressionsScene extends Scene {
                 transition.add(new MoveTo(val[r][c], x, y, 1.3).setEasing(Easing.EASE_IN_OUT));
             }
         }
-        play(transition.toArray(new Animation[0]));
+        cameraToWith(0, 0, 1.0, 1.3, transition.toArray(new Animation[0]));
         remove(rowFormula);
         remove(rowBig);
         for (int i = 0; i < N; i++) { remove(idxBox[i]); remove(idxText[i]); }
@@ -284,10 +295,9 @@ public class PDSArrayExpressionsScene extends Scene {
         remove(colUnfold);
 
         // ── The view pans right and zooms in very slightly to center on
-        //    the column, as if the frame itself were sliding right; the
-        //    title exits as though left behind by that motion. ──
-        cameraToWith(columnX, colCenterY, 1.1, 1.4, new FadeOut(title, 1.4));
-        remove(title);
+        //    the column, as if the frame itself were sliding right (the
+        //    title already exited during the row-major pan-down). ──
+        cameraTo(columnX, colCenterY, 1.1, 1.4);
         hold(0.3);
 
         RectMob[] colIdxBox = new RectMob[N];
@@ -316,8 +326,10 @@ public class PDSArrayExpressionsScene extends Scene {
         play(new Write(colBig, 2.4));
         hold(2.2);
 
-        // Everything dissolves together in one smooth motion.
-        MObject[] finale = new MObject[N * 4 + 3];
+        // Everything dissolves together in one smooth motion. (title
+        // already exited during the row-major pan-down, so it's not
+        // referenced here — re-adding it would make it pop back up.)
+        MObject[] finale = new MObject[N * 4 + 2];
         int fi = 0;
         for (int r = 0; r < SIZE; r++)
             for (int c = 0; c < SIZE; c++) {
@@ -328,7 +340,6 @@ public class PDSArrayExpressionsScene extends Scene {
             finale[fi++] = colIdxBox[i];
             finale[fi++] = colIdxText[i];
         }
-        finale[fi++] = title;
         finale[fi++] = colFormula;
         finale[fi++] = colBig;
         fadeOutAll(1.6, finale);
