@@ -16,6 +16,7 @@ com/lecviz/parser/PPTXParser$ParsedSlide$SlideType.class
 com/lecviz/mobjects/ArrayMob.class
 com/lecviz/animations/ColorChange$Target.class
 com/lecviz/animations/FadeIn.class
+com/lecviz/scenes/PDSSearchScene.class
 com/lecviz/core/Scene.class
 com/lecviz/scenes/PDSArraySceneV2.class
 com/lecviz/parser/PPTXParser$ParsedSlide.class
