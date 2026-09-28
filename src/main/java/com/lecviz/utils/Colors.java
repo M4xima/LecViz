@@ -8,9 +8,11 @@ import javafx.scene.paint.Color;
  */
 public final class Colors {
 
-    // Background
-    public static final Color BACKGROUND = Color.web("#1C1C2E");
-    public static final Color DARK_BG    = Color.web("#0F0F1A");
+    // Background — deep near-black with a faint blue tint, closer to
+    // 3Blue1Brown's actual render than a flat lighter navy: it makes
+    // translucent fills read as glowing rather than washed out.
+    public static final Color BACKGROUND = Color.web("#08080D");
+    public static final Color DARK_BG    = Color.web("#050508");
 
     // Primary accent colors (3B1B style)
     public static final Color BLUE       = Color.web("#58C4DD");

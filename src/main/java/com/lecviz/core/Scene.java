@@ -1,6 +1,7 @@
 package com.lecviz.core;
 
 import com.lecviz.utils.Colors;
+import com.lecviz.utils.Easing;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.canvas.Canvas;
@@ -42,12 +43,18 @@ public abstract class Scene {
 
     // 3B1B style gradient background
     private boolean useGradientBackground = true;
-    private Color gradientCenter = Color.web("#232345");
-    private Color gradientEdge = Colors.BACKGROUND;
+    private Color gradientCenter = Color.web("#12141F");
+    private Color gradientEdge = Colors.DARK_BG;
 
     private final List<MObject> mobjects = new ArrayList<>();
     private boolean recording = false;
     private String outputPath = "output.mp4";
+
+    // --- Camera (pan/zoom) ---
+    // (cameraX, cameraY) is the scene point centered on screen; cameraZoom
+    // scales everything around that point. Defaults (0, 0, 1) match the
+    // untransformed full-canvas framing every scene starts in.
+    private double cameraX = 0, cameraY = 0, cameraZoom = 1.0;
 
     // --- Setup ---
 
@@ -147,6 +154,28 @@ public abstract class Scene {
         hold(seconds);
     }
 
+    /**
+     * Animate the camera to focus on scene point (x, y) at the given zoom
+     * level, holding the shot for the duration. This is what lets a scene
+     * push in on a detail and pull back out for context instead of every
+     * mobject living at a fixed 1:1 scale forever.
+     */
+    public void cameraTo(double x, double y, double zoom, double duration) {
+        double startX = cameraX, startY = cameraY, startZoom = cameraZoom;
+        int frames = Math.max(1, (int) (duration * FPS));
+        for (int i = 1; i <= frames; i++) {
+            double t = Easing.SMOOTH.applyAsDouble(i / (double) frames);
+            cameraX = startX + (x - startX) * t;
+            cameraY = startY + (y - startY) * t;
+            cameraZoom = startZoom + (zoom - startZoom) * t;
+            renderFrame();
+        }
+    }
+
+    public void resetCamera(double duration) {
+        cameraTo(0, 0, 1.0, duration);
+    }
+
     // --- Rendering ---
 
     private void renderFrame() {
@@ -165,9 +194,14 @@ public abstract class Scene {
         }
         gc.fillRect(0, 0, WIDTH, HEIGHT);
 
+        gc.save();
+        gc.translate(WIDTH / 2.0, HEIGHT / 2.0);
+        gc.scale(cameraZoom, cameraZoom);
+        gc.translate(-cameraX - WIDTH / 2.0, -cameraY - HEIGHT / 2.0);
         for (MObject obj : mobjects) {
             obj.render(gc);
         }
+        gc.restore();
 
         if (recording && videoRenderer != null) {
             try {
