@@ -30,6 +30,7 @@ com/lecviz/generator/AutoSceneBuilder$1.class
 com/lecviz/animations/ColorChange.class
 com/lecviz/mobjects/StackMob.class
 com/lecviz/animations/ScaleTo.class
+com/lecviz/animations/RevealFillDown.class
 com/lecviz/animations/MoveTo.class
 com/lecviz/parser/SlideParser.class
 com/lecviz/scenes/PDSArraySceneV3.class

@@ -10,26 +10,31 @@ import com.lecviz.utils.Easing;
 import javafx.scene.paint.Color;
 
 /**
- * Standalone clip: how a 2D array A[4][4] actually sits in memory.
- * Opens with the 3Blue1Brown handwritten-stroke title reveal (StrokeTextMob
- * — used for sentence-level titles/captions only; short labels and numbers
- * stay plain TextMob), builds a translucent 4x4 grid whose values flicker
- * through random decoys before settling, color-codes each row, shows the
- * empty destination slots sliding into place together, then unrolls the
- * rows — in their own colors — into a single row-major memory strip with
- * indices.
+ * Standalone clip: how a 2D array A[4][4] actually sits in memory — first
+ * row-major, then, continuing straight on in the same video, column-major.
+ *
+ * Row-major half: title -> grid (values flicker then settle) -> row colors
+ * -> unroll into a horizontal strip -> formula + big statement, both
+ * centered. That pair then slides off to the right while fading, at the
+ * same time the strip regroups back into a 4-row grid shifted left; each
+ * row's label reappears beside it with its color pouring in top to bottom.
+ *
+ * Column-major half: same grid, cells shrink and cascade column-by-column
+ * into a vertical strip on the right (so the row colors land interleaved
+ * instead of in blocks) -> formula + big statement, centered -> everything
+ * fades out together at the very end.
  *
  * CS5013 Project: LecViz — Karthik (CS23B018) & Tejaswi (CS23B023)
  */
 public class PDSArrayExpressionsScene extends Scene {
 
     private static final int SIZE = 4;
+    private static final int N = SIZE * SIZE;
     private static final Color[] ROW_COLOR = { Colors.BLUE, Colors.GREEN, Colors.PURPLE, Colors.GOLD };
     private static final String[] ROW_NAME = { "Row 0", "Row 1", "Row 2", "Row 3" };
     private static final int[] RANDOM_VALUES = { 42, 17, 88, 3, 56, 91, 24, 67, 9, 73, 38, 15, 82, 6, 50, 29 };
 
-    // A single reusable caption line, far enough from the title and the
-    // grid that nothing here ever overlaps it.
+    // A single reusable caption line for the row-major half.
     private static final double CAPTION_Y = 180;
 
     private void fadeOutAll(double dur, MObject... objs) {
@@ -39,10 +44,19 @@ public class PDSArrayExpressionsScene extends Scene {
         for (MObject o : objs) remove(o);
     }
 
-    private StrokeTextMob caption(String text, double size, Color color) {
+    private StrokeTextMob caption(String text, double y, double size, Color color) {
         StrokeTextMob t = new StrokeTextMob(text, "Georgia", false, size)
                 .setFillColor(color).setStrokeColor(color);
-        t.setPosition(0, CAPTION_Y);
+        t.setPosition(0, y);
+        add(t);
+        return t;
+    }
+
+    /** The big, centered, stroke-drawn statement each half closes on. */
+    private StrokeTextMob bigStatement(String text) {
+        StrokeTextMob t = new StrokeTextMob(text, "Georgia", true, 36)
+                .setFillColor(Colors.WHITE).setStrokeColor(Colors.WHITE);
+        t.setPosition(0, 30);
         add(t);
         return t;
     }
@@ -57,13 +71,274 @@ public class PDSArrayExpressionsScene extends Scene {
         play(new Write(title, 2.8));
         hold(1.4);
 
-        // ── A translucent 4x4 grid of arbitrary (not sequential) values ──
         double cell = 100;
-        double gx0 = -(SIZE - 1) * cell / 2.0;
-        double gy0 = -80 - (SIZE - 1) * cell / 2.0;
 
         RectMob[][] box = new RectMob[SIZE][SIZE];
         TextMob[][] val = new TextMob[SIZE][SIZE];
+        buildGrid(box, val, cell, 0);
+
+        StrokeTextMob gridCaption = caption("In C, C++, Java, we use row-major storage", CAPTION_Y, 22, Colors.LIGHT_GRAY);
+        play(new Write(gridCaption, 1.8));
+        hold(1.3);
+        play(new FadeOut(gridCaption, 0.6));
+        remove(gridCaption);
+
+        colorRows(box);
+
+        // ── "Row-major storage" ──
+        StrokeTextMob unfoldCaption = caption("Row-major storage", CAPTION_Y, 26, Colors.LIGHT_GRAY);
+        play(new Write(unfoldCaption, 1.4));
+        hold(0.8);
+
+        double stripY = 320;
+        double stripX0 = -((N - 1) * cell) / 2.0;
+
+        RectMob[] slot = horizontalSlots(cell, stripY, stripX0);
+
+        // ── Cascade the colored rows down into those slots, row by row ──
+        for (int r = 0; r < SIZE; r++) {
+            Animation[] lift = new Animation[SIZE * 2];
+            int k = 0;
+            for (int c = 0; c < SIZE; c++) {
+                lift[k++] = new MoveTo(box[r][c], box[r][c].getPosition().x(), box[r][c].getPosition().y() - 18, 0.18)
+                        .setEasing(Easing.EASE_OUT);
+                lift[k++] = new MoveTo(val[r][c], val[r][c].getPosition().x(), val[r][c].getPosition().y() - 18, 0.18)
+                        .setEasing(Easing.EASE_OUT);
+            }
+            play(lift);
+
+            Animation[] slide = new Animation[SIZE * 2];
+            k = 0;
+            for (int c = 0; c < SIZE; c++) {
+                int slotIdx = r * SIZE + c;
+                double targetX = stripX0 + slotIdx * cell;
+                slide[k++] = new MoveTo(box[r][c], targetX, stripY, 1.0).setEasing(Easing.EASE_IN_OUT);
+                slide[k++] = new MoveTo(val[r][c], targetX, stripY, 1.0).setEasing(Easing.EASE_IN_OUT);
+            }
+            play(slide);
+
+            FadeOut[] slotFade = new FadeOut[SIZE];
+            for (int c = 0; c < SIZE; c++) slotFade[c] = new FadeOut(slot[r * SIZE + c], 0.2);
+            play(slotFade);
+            for (int c = 0; c < SIZE; c++) remove(slot[r * SIZE + c]);
+
+            hold(0.35);
+        }
+        hold(0.6);
+
+        play(new FadeOut(unfoldCaption, 0.6));
+        remove(unfoldCaption);
+
+        RectMob[] idxBox = new RectMob[N];
+        TextMob[] idxText = new TextMob[N];
+        for (int i = 0; i < N; i++) {
+            double x = stripX0 + i * cell;
+            double y = stripY + 68;
+            idxBox[i] = outlineIndexBox(x, y, 38, 32);
+            idxText[i] = indexLabel(x, y, i);
+            play(new FadeIn(idxBox[i], 0.1), new FadeIn(idxText[i], 0.1));
+        }
+        hold(0.9);
+
+        // ── Formula and big statement, centered, formula above ──
+        LaTeXMob rowFormula = new LaTeXMob("\\mathbf{\\text{addr}(A[r][c]) = base + (r \\times 4 + c) \\times size}")
+                .setSize(36).setLatexColor(Colors.WHITE);
+        rowFormula.setPosition(0, -60);
+        add(rowFormula);
+        play(new Write(rowFormula, 2.0));
+        hold(1.2);
+
+        StrokeTextMob rowBig = bigStatement("All elements of a row are stored together");
+        play(new Write(rowBig, 2.4));
+        hold(2.2);
+
+        // ── Transition: the formula + statement slide off to the right
+        //    while fading, at the same moment the strip regroups back
+        //    into a 4-row grid shifted left to make room for the column
+        //    that's coming. Everything moves together, nothing is cut. ──
+        double gridCenterX = -350;
+        double gx0 = gridCenterX - (SIZE - 1) * cell / 2.0;
+        double gy0 = -60 - (SIZE - 1) * cell / 2.0;
+
+        java.util.List<Animation> transition = new java.util.ArrayList<>();
+        transition.add(new MoveTo(rowFormula, 1500, rowFormula.getPosition().y(), 1.3).setEasing(Easing.EASE_IN));
+        transition.add(new FadeOut(rowFormula, 1.3));
+        transition.add(new MoveTo(rowBig, 1500, rowBig.getPosition().y(), 1.3).setEasing(Easing.EASE_IN));
+        transition.add(new FadeOut(rowBig, 1.3));
+        for (int i = 0; i < N; i++) {
+            transition.add(new FadeOut(idxBox[i], 0.9));
+            transition.add(new FadeOut(idxText[i], 0.9));
+        }
+        for (int r = 0; r < SIZE; r++) {
+            for (int c = 0; c < SIZE; c++) {
+                double x = gx0 + c * cell;
+                double y = gy0 + r * cell;
+                transition.add(new MoveTo(box[r][c], x, y, 1.3).setEasing(Easing.EASE_IN_OUT));
+                transition.add(new MoveTo(val[r][c], x, y, 1.3).setEasing(Easing.EASE_IN_OUT));
+            }
+        }
+        play(transition.toArray(new Animation[0]));
+        remove(rowFormula);
+        remove(rowBig);
+        for (int i = 0; i < N; i++) { remove(idxBox[i]); remove(idxText[i]); }
+        hold(0.4);
+
+        // ── Row labels reappear beside each row, colors set directly ──
+        double labelX = gridCenterX + (SIZE * cell) / 2.0 + 70;
+        java.util.List<Animation> relabel = new java.util.ArrayList<>();
+        StrokeTextMob[] rowLbl2 = new StrokeTextMob[SIZE];
+        for (int r = 0; r < SIZE; r++) {
+            double rowY = gy0 + r * cell;
+            rowLbl2[r] = new StrokeTextMob(ROW_NAME[r], "Georgia", false, 24)
+                    .setFillColor(ROW_COLOR[r]).setStrokeColor(ROW_COLOR[r]);
+            rowLbl2[r].setPosition(labelX, rowY);
+            add(rowLbl2[r]);
+            relabel.add(new Write(rowLbl2[r], 1.0));
+
+            for (int c = 0; c < SIZE; c++) {
+                relabel.add(new ColorChange(box[r][c], Colors.withAlpha(ROW_COLOR[r], 0.30), 1.0));
+            }
+        }
+        play(relabel.toArray(new Animation[0]));
+        for (int r = 0; r < SIZE; r++)
+            for (int c = 0; c < SIZE; c++)
+                box[r][c].setStrokeColor(Colors.withAlpha(ROW_COLOR[r], 0.8));
+        hold(0.9);
+        fadeOutAll(0.6, rowLbl2);
+
+        // ── Column-major half ──
+        double colCaptionY = -300;
+        StrokeTextMob colCaption = caption("In Fortran, we use column-major storage.", colCaptionY, 22, Colors.LIGHT_GRAY);
+        play(new Write(colCaption, 1.8));
+        hold(1.3);
+        play(new FadeOut(colCaption, 0.6));
+        remove(colCaption);
+
+        StrokeTextMob colUnfold = caption("Column-major storage", colCaptionY, 26, Colors.LIGHT_GRAY);
+        play(new Write(colUnfold, 1.4));
+        hold(0.8);
+
+        double columnX = 560;
+        double colCellSize = 44, colSpacing = 42;
+        double colScale = colCellSize / (cell - 10);
+        double colCenterY = 100;
+        double colY0 = colCenterY - (N - 1) * colSpacing / 2.0;
+
+        RectMob[] colSlot = new RectMob[N];
+        for (int i = 0; i < N; i++) {
+            double targetY = colY0 + i * colSpacing;
+            RectMob s = new RectMob(colCellSize, colCellSize).setCornerRadius(5);
+            s.setFillColor(Color.TRANSPARENT);
+            s.setStrokeColor(Colors.withAlpha(Colors.LIGHT_GRAY, 0.55));
+            s.setPosition(columnX, targetY + 60);
+            s.setOpacity(0);
+            colSlot[i] = s;
+            add(s);
+        }
+        Animation[] slotIn = new Animation[N * 2];
+        int sli = 0;
+        for (int i = 0; i < N; i++) {
+            double targetY = colY0 + i * colSpacing;
+            slotIn[sli++] = new FadeIn(colSlot[i], 0.4);
+            slotIn[sli++] = new MoveTo(colSlot[i], columnX, targetY, 0.5).setEasing(Easing.EASE_OUT);
+        }
+        play(slotIn);
+        hold(0.7);
+
+        // Cascade column by column: each wave takes one cell from every
+        // row, shrinking to fit the square slots, so the row colors land
+        // interleaved instead of in blocks.
+        for (int c = 0; c < SIZE; c++) {
+            Animation[] lift = new Animation[SIZE * 2];
+            int k = 0;
+            for (int r = 0; r < SIZE; r++) {
+                lift[k++] = new MoveTo(box[r][c], box[r][c].getPosition().x() + 14, box[r][c].getPosition().y(), 0.18)
+                        .setEasing(Easing.EASE_OUT);
+                lift[k++] = new MoveTo(val[r][c], val[r][c].getPosition().x() + 14, val[r][c].getPosition().y(), 0.18)
+                        .setEasing(Easing.EASE_OUT);
+            }
+            play(lift);
+
+            Animation[] slide = new Animation[SIZE * 4];
+            k = 0;
+            for (int r = 0; r < SIZE; r++) {
+                int slotIdx = c * SIZE + r;
+                double targetY = colY0 + slotIdx * colSpacing;
+                slide[k++] = new MoveTo(box[r][c], columnX, targetY, 1.0).setEasing(Easing.EASE_IN_OUT);
+                slide[k++] = new MoveTo(val[r][c], columnX, targetY, 1.0).setEasing(Easing.EASE_IN_OUT);
+                slide[k++] = new ScaleTo(box[r][c], colScale, 1.0);
+                slide[k++] = new ScaleTo(val[r][c], colScale, 1.0);
+            }
+            play(slide);
+
+            FadeOut[] slotFade = new FadeOut[SIZE];
+            for (int r = 0; r < SIZE; r++) slotFade[r] = new FadeOut(colSlot[c * SIZE + r], 0.2);
+            play(slotFade);
+            for (int r = 0; r < SIZE; r++) remove(colSlot[c * SIZE + r]);
+
+            hold(0.35);
+        }
+        hold(0.6);
+
+        play(new FadeOut(colUnfold, 0.6));
+        remove(colUnfold);
+
+        // ── The view pans right and zooms in very slightly to center on
+        //    the column, as if the frame itself were sliding right; the
+        //    title exits as though left behind by that motion. ──
+        cameraToWith(columnX, colCenterY, 1.1, 1.4, new FadeOut(title, 1.4));
+        remove(title);
+        hold(0.3);
+
+        RectMob[] colIdxBox = new RectMob[N];
+        TextMob[] colIdxText = new TextMob[N];
+        double idxX = columnX + colCellSize / 2.0 + 10 + 19;
+        for (int i = 0; i < N; i++) {
+            double y = colY0 + i * colSpacing;
+            colIdxBox[i] = outlineIndexBox(idxX, y, 38, colCellSize - 8);
+            colIdxText[i] = indexLabel(idxX, y, i);
+            play(new FadeIn(colIdxBox[i], 0.1), new FadeIn(colIdxText[i], 0.1));
+        }
+        hold(0.9);
+
+        // ── Formula and big statement, centered on the new (panned) view,
+        //    sitting in the open space below the column so neither
+        //    overlaps it ──
+        LaTeXMob colFormula = new LaTeXMob("\\mathbf{\\text{addr}(A[r][c]) = base + (c \\times 4 + r) \\times size}")
+                .setSize(36).setLatexColor(Colors.WHITE);
+        colFormula.setPosition(columnX, 470);
+        add(colFormula);
+        play(new Write(colFormula, 2.0));
+        hold(1.2);
+
+        StrokeTextMob colBig = bigStatement("Each column is stored together");
+        colBig.setPosition(columnX, 545);
+        play(new Write(colBig, 2.4));
+        hold(2.2);
+
+        // Everything dissolves together in one smooth motion.
+        MObject[] finale = new MObject[N * 4 + 3];
+        int fi = 0;
+        for (int r = 0; r < SIZE; r++)
+            for (int c = 0; c < SIZE; c++) {
+                finale[fi++] = box[r][c];
+                finale[fi++] = val[r][c];
+            }
+        for (int i = 0; i < N; i++) {
+            finale[fi++] = colIdxBox[i];
+            finale[fi++] = colIdxText[i];
+        }
+        finale[fi++] = title;
+        finale[fi++] = colFormula;
+        finale[fi++] = colBig;
+        fadeOutAll(1.6, finale);
+        hold(0.5);
+    }
+
+    private void buildGrid(RectMob[][] box, TextMob[][] val, double cell, double centerX) {
+        double gx0 = centerX - (SIZE - 1) * cell / 2.0;
+        double gy0 = -80 - (SIZE - 1) * cell / 2.0;
+
         for (int r = 0; r < SIZE; r++) {
             for (int c = 0; c < SIZE; c++) {
                 double x = gx0 + c * cell;
@@ -83,8 +358,7 @@ public class PDSArrayExpressionsScene extends Scene {
             }
         }
 
-        // Boxes first, all together
-        Animation[] boxFade = new Animation[SIZE * SIZE];
+        Animation[] boxFade = new Animation[N];
         int bi = 0;
         for (int r = 0; r < SIZE; r++)
             for (int c = 0; c < SIZE; c++)
@@ -92,9 +366,6 @@ public class PDSArrayExpressionsScene extends Scene {
         play(boxFade);
         hold(0.5);
 
-        // Then the values: flicker through random decoys, all cells at
-        // once, before every cell locks onto its real value together —
-        // the classic "randomizing" reveal.
         java.util.Random rng = new java.util.Random(7);
         int flickerSteps = 10;
         for (int s = 0; s < flickerSteps; s++) {
@@ -108,14 +379,9 @@ public class PDSArrayExpressionsScene extends Scene {
             for (int c = 0; c < SIZE; c++)
                 val[r][c].setText(String.valueOf(RANDOM_VALUES[vi++]));
         hold(0.8);
+    }
 
-        StrokeTextMob gridCaption = caption("In C, C++, Java, we use row-major storage", 22, Colors.LIGHT_GRAY);
-        play(new Write(gridCaption, 1.8));
-        hold(1.3);
-        play(new FadeOut(gridCaption, 0.6));
-        remove(gridCaption);
-
-        // ── Color each row so the eye can track it through the unroll ──
+    private void colorRows(RectMob[][] box) {
         for (int r = 0; r < SIZE; r++) {
             TextMob rowLbl = new TextMob(ROW_NAME[r]).setFontSize(24).setBold().setFillColor(ROW_COLOR[r]);
             rowLbl.setPosition(0, CAPTION_Y);
@@ -133,23 +399,12 @@ public class PDSArrayExpressionsScene extends Scene {
             remove(rowLbl);
         }
         hold(0.4);
+    }
 
-        // ── "Row-major storage" ──
-        StrokeTextMob unfoldCaption = caption("Row-major storage", 26, Colors.LIGHT_GRAY);
-        play(new Write(unfoldCaption, 1.4));
-        hold(0.8);
-
-        // ── The 16 destination slots arrive first: outline only, fading
-        //    in as they slide up from below into the exact spot each
-        //    colored cell is about to land on. ──
-        double scw = cell;
-        double stripY = 320;
-        int N = SIZE * SIZE;
-        double stripX0 = -((N - 1) * scw) / 2.0;
-
+    private RectMob[] horizontalSlots(double cell, double stripY, double stripX0) {
         RectMob[] slot = new RectMob[N];
         for (int i = 0; i < N; i++) {
-            double targetX = stripX0 + i * scw;
+            double targetX = stripX0 + i * cell;
             RectMob s = new RectMob(cell - 10, cell - 10).setCornerRadius(8);
             s.setFillColor(Color.TRANSPARENT);
             s.setStrokeColor(Colors.withAlpha(Colors.LIGHT_GRAY, 0.55));
@@ -166,93 +421,24 @@ public class PDSArrayExpressionsScene extends Scene {
         }
         play(slotIn);
         hold(0.7);
+        return slot;
+    }
 
-        // ── Cascade the colored rows down into those slots, row by row ──
-        for (int r = 0; r < SIZE; r++) {
-            Animation[] lift = new Animation[SIZE * 2];
-            int k = 0;
-            for (int c = 0; c < SIZE; c++) {
-                lift[k++] = new MoveTo(box[r][c], box[r][c].getPosition().x(), box[r][c].getPosition().y() - 18, 0.18)
-                        .setEasing(Easing.EASE_OUT);
-                lift[k++] = new MoveTo(val[r][c], val[r][c].getPosition().x(), val[r][c].getPosition().y() - 18, 0.18)
-                        .setEasing(Easing.EASE_OUT);
-            }
-            play(lift);
+    private RectMob outlineIndexBox(double x, double y, double w, double h) {
+        RectMob ib = new RectMob(w, h).setCornerRadius(5);
+        ib.setFillColor(Color.TRANSPARENT);
+        ib.setStrokeColor(Colors.withAlpha(Colors.GRAY, 0.6));
+        ib.setPosition(x, y);
+        ib.setOpacity(0);
+        add(ib);
+        return ib;
+    }
 
-            Animation[] slide = new Animation[SIZE * 2];
-            k = 0;
-            for (int c = 0; c < SIZE; c++) {
-                int slotIdx = r * SIZE + c;
-                double targetX = stripX0 + slotIdx * scw;
-                slide[k++] = new MoveTo(box[r][c], targetX, stripY, 1.0).setEasing(Easing.EASE_IN_OUT);
-                slide[k++] = new MoveTo(val[r][c], targetX, stripY, 1.0).setEasing(Easing.EASE_IN_OUT);
-            }
-            play(slide);
-
-            // The now-covered placeholder outlines disappear as each piece clicks in.
-            FadeOut[] slotFade = new FadeOut[SIZE];
-            for (int c = 0; c < SIZE; c++) slotFade[c] = new FadeOut(slot[r * SIZE + c], 0.2);
-            play(slotFade);
-            for (int c = 0; c < SIZE; c++) remove(slot[r * SIZE + c]);
-
-            hold(0.35);
-        }
-        hold(0.6);
-
-        play(new FadeOut(unfoldCaption, 0.6));
-        remove(unfoldCaption);
-
-        // ── Index labels underneath, each in its own small outline block ──
-        RectMob[] idxBox = new RectMob[N];
-        TextMob[] idxText = new TextMob[N];
-        for (int i = 0; i < N; i++) {
-            double x = stripX0 + i * scw;
-            double y = stripY + 68;
-
-            RectMob ib = new RectMob(38, 32).setCornerRadius(5);
-            ib.setFillColor(Color.TRANSPARENT);
-            ib.setStrokeColor(Colors.withAlpha(Colors.GRAY, 0.6));
-            ib.setPosition(x, y);
-            ib.setOpacity(0);
-            idxBox[i] = ib;
-            add(ib);
-
-            TextMob it = new TextMob(String.valueOf(i)).setFontSize(16).setFillColor(Colors.GRAY);
-            it.setPosition(x, y);
-            it.setOpacity(0);
-            idxText[i] = it;
-            add(it);
-
-            play(new FadeIn(ib, 0.1), new FadeIn(it, 0.1));
-        }
-        hold(0.9);
-
-        LaTeXMob formula = new LaTeXMob("\\text{addr}(A[r][c]) = base + (r \\times 4 + c) \\times size")
-                .setSize(26).setLatexColor(Colors.WHITE);
-        formula.setPosition(0, 460);
-        play(new Write(formula, 2.0));
-        hold(2.0);
-
-        StrokeTextMob closing = caption("All elements of a row are stored together", 20, Colors.LIGHT_GRAY);
-        play(new Write(closing, 2.2));
-        hold(2.4);
-
-        // Everything dissolves together in one smooth motion, not in stages.
-        MObject[] finale = new MObject[N * 4 + 3];
-        int fi = 0;
-        for (int r = 0; r < SIZE; r++)
-            for (int c = 0; c < SIZE; c++) {
-                finale[fi++] = box[r][c];
-                finale[fi++] = val[r][c];
-            }
-        for (int i = 0; i < N; i++) {
-            finale[fi++] = idxBox[i];
-            finale[fi++] = idxText[i];
-        }
-        finale[fi++] = title;
-        finale[fi++] = formula;
-        finale[fi++] = closing;
-        fadeOutAll(1.6, finale);
-        hold(0.5);
+    private TextMob indexLabel(double x, double y, int i) {
+        TextMob it = new TextMob(String.valueOf(i)).setFontSize(16).setFillColor(Colors.GRAY);
+        it.setPosition(x, y);
+        it.setOpacity(0);
+        add(it);
+        return it;
     }
 }

@@ -176,6 +176,31 @@ public abstract class Scene {
         cameraTo(0, 0, 1.0, duration);
     }
 
+    /**
+     * Like cameraTo, but drives the given animations on the same frame
+     * loop so a camera pan/zoom and, say, an object fading out happen in
+     * the same breath instead of one after the other.
+     */
+    public void cameraToWith(double x, double y, double zoom, double duration, Animation... animations) {
+        double startX = cameraX, startY = cameraY, startZoom = cameraZoom;
+        for (Animation a : animations) {
+            if (!mobjects.contains(a.getTarget())) mobjects.add(a.getTarget());
+            a.begin();
+        }
+        int frames = Math.max(1, (int) (duration * FPS));
+        double dt = 1.0 / FPS;
+        for (int i = 1; i <= frames; i++) {
+            double t = Easing.SMOOTH.applyAsDouble(i / (double) frames);
+            cameraX = startX + (x - startX) * t;
+            cameraY = startY + (y - startY) * t;
+            cameraZoom = startZoom + (zoom - startZoom) * t;
+            for (Animation a : animations) {
+                if (!a.isFinished()) a.update(dt);
+            }
+            renderFrame();
+        }
+    }
+
     // --- Rendering ---
 
     private void renderFrame() {
