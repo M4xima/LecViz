@@ -109,7 +109,7 @@ public class PDSArrayExpressionsScene extends Scene {
                 val[r][c].setText(String.valueOf(RANDOM_VALUES[vi++]));
         hold(0.8);
 
-        StrokeTextMob gridCaption = caption("A 4×4 grid — but memory is only ever 1D", 22, Colors.LIGHT_GRAY);
+        StrokeTextMob gridCaption = caption("In C, C++, Java, we use row-major storage", 22, Colors.LIGHT_GRAY);
         play(new Write(gridCaption, 1.8));
         hold(1.3);
         play(new FadeOut(gridCaption, 0.6));
