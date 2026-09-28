@@ -237,21 +237,22 @@ public class PDSArrayExpressionsScene extends Scene {
         play(new Write(closing, 2.2));
         hold(2.4);
 
-        MObject[] allCells = new MObject[N * 2];
-        int ci = 0;
+        // Everything dissolves together in one smooth motion, not in stages.
+        MObject[] finale = new MObject[N * 4 + 3];
+        int fi = 0;
         for (int r = 0; r < SIZE; r++)
             for (int c = 0; c < SIZE; c++) {
-                allCells[ci++] = box[r][c];
-                allCells[ci++] = val[r][c];
+                finale[fi++] = box[r][c];
+                finale[fi++] = val[r][c];
             }
-        MObject[] allIdx = new MObject[N * 2];
         for (int i = 0; i < N; i++) {
-            allIdx[i * 2] = idxBox[i];
-            allIdx[i * 2 + 1] = idxText[i];
+            finale[fi++] = idxBox[i];
+            finale[fi++] = idxText[i];
         }
-        fadeOutAll(0.9, allCells);
-        fadeOutAll(0.9, allIdx);
-        fadeOutAll(0.9, title, formula, closing);
+        finale[fi++] = title;
+        finale[fi++] = formula;
+        finale[fi++] = closing;
+        fadeOutAll(1.6, finale);
         hold(0.5);
     }
 }
