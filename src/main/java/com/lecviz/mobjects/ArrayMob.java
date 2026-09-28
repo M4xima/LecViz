@@ -22,6 +22,7 @@ public class ArrayMob extends MObject {
     private double cellHeight = 50;
     private Map<Integer, Color> cellColors = new HashMap<>();
     private Set<Integer> highlighted = new HashSet<>();
+    private Map<Integer, Vec2> cellOffset = new HashMap<>();
     private boolean showIndices = true;
     private String label = null; // e.g. "arr[]"
     private int pointerIndex = -1; // arrow pointer (-1 = hidden)
@@ -47,6 +48,7 @@ public class ArrayMob extends MObject {
 
     public ArrayMob setCellColor(int index, Color c) { cellColors.put(index, c); return this; }
     public ArrayMob clearCellColors() { cellColors.clear(); return this; }
+    public ArrayMob clearCellColorAt(int index) { cellColors.remove(index); return this; }
 
     public ArrayMob highlight(int index) { highlighted.add(index); return this; }
     public ArrayMob unhighlight(int index) { highlighted.remove(index); return this; }
@@ -55,6 +57,15 @@ public class ArrayMob extends MObject {
     public ArrayMob setShowIndices(boolean b) { showIndices = b; return this; }
     public ArrayMob setLabel(String l) { label = l; return this; }
     public ArrayMob setCellSize(double w, double h) { cellWidth = w; cellHeight = h; return this; }
+    public double getCellWidth() { return cellWidth; }
+    public double getCellHeight() { return cellHeight; }
+
+    // Rendering-only positional offset for a cell — used to animate swaps
+    // (the two cells arc past each other) without touching the underlying
+    // values until the swap animation commits.
+    public ArrayMob setCellOffset(int index, Vec2 offset) { cellOffset.put(index, offset); return this; }
+    public ArrayMob clearCellOffset(int index) { cellOffset.remove(index); return this; }
+    public Vec2 getCellOffset(int index) { return cellOffset.getOrDefault(index, Vec2.ZERO); }
 
     public ArrayMob setPointer(int index, String label) {
         this.pointerIndex = index;
@@ -97,8 +108,10 @@ public class ArrayMob extends MObject {
         }
 
         for (int i = 0; i < values.length; i++) {
-            double x = startX + i * cellWidth;
-            double y = -cellHeight / 2;
+            Vec2 off = cellOffset.getOrDefault(i, Vec2.ZERO);
+            double x = startX + i * cellWidth + off.x();
+            double y = -cellHeight / 2 + off.y();
+            boolean flying = off.x() != 0 || off.y() != 0;
 
             // Cell background
             Color bg = cellColors.getOrDefault(i, fillColor);
@@ -108,9 +121,9 @@ public class ArrayMob extends MObject {
             gc.setFill(bg);
             gc.fillRect(x, y, cellWidth, cellHeight);
 
-            // Cell border
-            gc.setStroke(strokeColor);
-            gc.setLineWidth(strokeWidth);
+            // Cell border — cells in flight get a brighter outline to read as "in motion"
+            gc.setStroke(flying ? Colors.ORANGE : strokeColor);
+            gc.setLineWidth(flying ? strokeWidth + 1 : strokeWidth);
             gc.strokeRect(x, y, cellWidth, cellHeight);
 
             // Value text
@@ -120,11 +133,12 @@ public class ArrayMob extends MObject {
             gc.setFill(Colors.WHITE);
             gc.fillText(values[i], x + cellWidth / 2, y + cellHeight / 2);
 
-            // Index label below
+            // Index label below (fixed to the natural slot, not the flying cell)
             if (showIndices) {
+                double labelX = startX + i * cellWidth + cellWidth / 2;
                 gc.setFont(Font.font("SansSerif", 14));
                 gc.setFill(Colors.GRAY);
-                gc.fillText(String.valueOf(i), x + cellWidth / 2, y + cellHeight + 16);
+                gc.fillText(String.valueOf(i), labelX, -cellHeight / 2 + cellHeight + 16);
             }
         }
 
@@ -162,6 +176,7 @@ public class ArrayMob extends MObject {
         c.cellHeight = this.cellHeight;
         c.cellColors = new HashMap<>(this.cellColors);
         c.highlighted = new HashSet<>(this.highlighted);
+        c.cellOffset = new HashMap<>(this.cellOffset);
         c.showIndices = this.showIndices;
         c.label = this.label;
         c.pointerIndex = this.pointerIndex;

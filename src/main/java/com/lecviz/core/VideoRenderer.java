@@ -3,7 +3,6 @@ package com.lecviz.core;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.WritableImage;
-import org.bytedeco.ffmpeg.global.avcodec;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -34,13 +33,16 @@ public class VideoRenderer {
 
     public void start() throws Exception {
         recorder = new FFmpegFrameRecorder(outputPath, width, height);
-        recorder.setVideoCodec(avcodec.AV_CODEC_ID_H264);
+        // The bundled libopenh264 software encoder is baseline-profile only
+        // (no B-frames) and visibly soft on flat colors/text edges. This
+        // Mac has Apple's hardware H.264 encoder, which does real High
+        // profile at much better quality — and it's faster too.
+        recorder.setVideoCodecName("h264_videotoolbox");
         recorder.setFormat("mp4");
         recorder.setFrameRate(fps);
         recorder.setPixelFormat(org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_YUV420P);
-        // Quality: CRF 18 = visually lossless
-        recorder.setVideoOption("crf", "18");
-        recorder.setVideoOption("preset", "medium");
+        recorder.setVideoOption("profile", "high");
+        recorder.setVideoBitrate(20_000_000); // ~20 Mbps — generous for crisp flat color + text at 1080p60
         recorder.start();
 
         converter = new Java2DFrameConverter();
