@@ -53,6 +53,7 @@ public class LecVizApp extends Application {
         SCENES.put("arraysv3",  PDSArraySceneV3::new);
         SCENES.put("array_3to4", PDSArrayExpressionsScene::new);
         SCENES.put("array_5", PDSSearchScene::new);
+        SCENES.put("array_7to9", PDSSortedMatrixSearchScene::new);
     }
 
     @Override

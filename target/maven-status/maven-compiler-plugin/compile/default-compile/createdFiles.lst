@@ -27,6 +27,7 @@ com/lecviz/scenes/PDSArrayExpressionsScene.class
 com/lecviz/animations/FadeOut.class
 com/lecviz/mobjects/StrokeTextMob.class
 com/lecviz/mobjects/CircleMob.class
+com/lecviz/scenes/PDSSortedMatrixSearchScene.class
 com/lecviz/generator/AutoSceneBuilder$1.class
 com/lecviz/animations/ColorChange.class
 com/lecviz/mobjects/StackMob.class
@@ -42,6 +43,7 @@ com/lecviz/parser/PPTXParser.class
 com/lecviz/mobjects/CubeGrid3D.class
 com/lecviz/utils/Vec3.class
 com/lecviz/scenes/PDSLinkedListScene.class
+com/lecviz/scenes/PDSSortedMatrixSearchScene$Wipe.class
 com/lecviz/scenes/PDSStackScene.class
 com/lecviz/scenes/PDSTreeScene.class
 com/lecviz/scenes/PDSDictionaryScene.class
