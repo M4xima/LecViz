@@ -197,8 +197,11 @@ public class PDSSortedMatrixSearchScene extends Scene {
     private TextMob[] qLab;
     private final List<MObject> decor = new ArrayList<>(); // rides along when the grid shifts
 
-    private static int quadrantOf(int r, int c) {
-        return (r <= PIVOT_R) ? (c <= PIVOT_C ? 0 : 1) : (c <= PIVOT_C ? 3 : 2);
+    // The pivot currently dividing the grid; Approach 1's third case briefly uses another one.
+    private int curR = PIVOT_R, curC = PIVOT_C;
+
+    private int quadrantOf(int r, int c) {
+        return (r <= curR) ? (c <= curC ? 0 : 1) : (c <= curC ? 3 : 2);
     }
 
     /** Candidate quadrants tinted in their own colors; every other quadrant dims out. */
@@ -295,10 +298,39 @@ public class PDSSortedMatrixSearchScene extends Scene {
         play(down);
     }
 
+    /**
+     * Glides the pivot to [nr, nc]: the dividing lines slide, the two pink comparison
+     * cells (i,0) and (0,j) move with their rings and labels, and the old pink cells
+     * go back to plain green. {@code extra} animations run in the same breath.
+     */
+    private void switchPivot(int nr, int nc, double dur, RectMob ringRow, RectMob ringCol,
+                             TextMob lblRow, TextMob lblCol, List<Animation> extra) {
+        Color pinkFill = Colors.withAlpha(Colors.PINK, 0.5);
+        List<Animation> an = new ArrayList<>(extra);
+        pin[curR][0] = null;
+        pin[0][curC] = null;
+        an.add(new ColorChange(box[curR][0], BASE_FILL, dur));
+        an.add(new ColorChange(box[0][curC], BASE_FILL, dur));
+        pin[nr][0] = pinkFill;
+        pin[0][nc] = pinkFill;
+        an.add(new ColorChange(box[nr][0], pinkFill, dur));
+        an.add(new ColorChange(box[0][nc], pinkFill, dur));
+        double colXs = colX(nc) + GRID_SHIFT;
+        an.add(new MoveTo(ringRow, ringRow.getPosition().x(), rowY(nr), dur).setEasing(Easing.EASE_IN_OUT));
+        an.add(new MoveTo(lblRow, lblRow.getPosition().x(), rowY(nr), dur).setEasing(Easing.EASE_IN_OUT));
+        an.add(new MoveTo(ringCol, colXs, ringCol.getPosition().y(), dur).setEasing(Easing.EASE_IN_OUT));
+        an.add(new MoveTo(lblCol, colXs, lblCol.getPosition().y(), dur).setEasing(Easing.EASE_IN_OUT));
+        an.add(new MoveTo(hLine, hLine.getPosition().x(), MATRIX_TOP + (nr + 1) * CELL_H, dur).setEasing(Easing.EASE_IN_OUT));
+        an.add(new MoveTo(vLine, colX(nc) + CELL_W / 2.0 + GRID_SHIFT, vLine.getPosition().y(), dur).setEasing(Easing.EASE_IN_OUT));
+        play(an.toArray(new Animation[0]));
+        curR = nr;
+        curC = nc;
+    }
+
     /** The grid's dividing lines (between rows i|i+1 and columns j|j+1) and the Q1-Q4 tags. */
     private void buildDividers() {
-        double midY = MATRIX_TOP + (PIVOT_R + 1) * CELL_H;
-        double midX = colX(PIVOT_C) + CELL_W / 2.0;
+        double midY = MATRIX_TOP + (curR + 1) * CELL_H;
+        double midX = colX(curC) + CELL_W / 2.0;
         hLine = new RectMob(COLS * CELL_W + 40, 2.5);
         hLine.setFillColor(Colors.withAlpha(Colors.WHITE, 0.75));
         hLine.setStrokeColor(Color.TRANSPARENT);
@@ -386,13 +418,13 @@ public class PDSSortedMatrixSearchScene extends Scene {
         int[][][] samples = {
             {{0, 1}},                          // 5
             {{2, 2}},                          // 12
-            {},                                // nothing fits: 19 > 9
+            {{1, 2}, {3, 1}},                  // with pivot (1, 3): 11 in Q1 and 13 in Q4
             {{3, 2}, {3, 3}, {6, 3}, {6, 1}},  // 22, 27, 51, 31
         };
         String[] sampleNote = {
             "e.g. key = 5     (5 < 19 and 5 < 9)",
             "e.g. key = 12     (12 < 19 and 12 > 9) — Q2 can't be ruled out yet",
-            "No key fits here: this case needs (i,0) < (0,j), but 19 > 9",
+            "e.g. key = 11 in Q1 and key = 13 in Q4     (4 < key < 20)",
             "e.g. one from every quadrant: 22, 27, 51, 31 — all > 19 and > 9",
         };
 
@@ -404,6 +436,23 @@ public class PDSSortedMatrixSearchScene extends Scene {
             in.add(new FadeIn(ruleTxt[k], d(0.5)));
             if (k > 0) in.add(new ColorChange(ruleTxt[k - 1], Colors.GRAY, d(0.4)));
             play(in.toArray(new Animation[0]));
+
+            if (k == 2) {
+                // With the first pivot (i,0) = 19 > (0,j) = 9, so no key can land here — pick a pivot where it can.
+                TextMob why = label("With i = 4, j = 2:  (i,0) = 19 is bigger than (0,j) = 9, so this case can't happen.",
+                        PANEL_LEFT, -5, 21, Colors.ORANGE, true);
+                play(new FadeIn(why, d(0.5)));
+                pause(2.6);
+                TextMob other = label("Pick another pivot:  i = 1, j = 3   →   (i,0) = 4  <  (0,j) = 20",
+                        PANEL_LEFT, -5, 21, Colors.PINK, true);
+                List<Animation> ex = new ArrayList<>();
+                ex.add(new FadeOut(why, d(0.4)));
+                ex.add(new FadeIn(other, d(0.6)));
+                switchPivot(1, 3, d(1.5), ringRow, ringCol, lblRow, lblCol, ex);
+                remove(why);
+                pause(1.8);
+                fadeOutAll(d(0.4), other);
+            }
 
             tintQuadrants(keep[k]);
 
@@ -423,6 +472,15 @@ public class PDSSortedMatrixSearchScene extends Scene {
             fadeOutAll(d(0.4), temp.toArray(new MObject[0]));
             resetQuadrants();
             pause(0.3);
+
+            if (k == 2) {
+                TextMob back = label("Back to i = 4, j = 2 for the last case.", PANEL_LEFT, -5, 21, Colors.LIGHT_GRAY, true);
+                List<Animation> ex = new ArrayList<>();
+                ex.add(new FadeIn(back, d(0.5)));
+                switchPivot(PIVOT_R, PIVOT_C, d(1.3), ringRow, ringCol, lblRow, lblCol, ex);
+                pause(0.8);
+                fadeOutAll(d(0.4), back);
+            }
         }
         pause(0.3);
 
@@ -859,6 +917,52 @@ public class PDSSortedMatrixSearchScene extends Scene {
         play(new Write(bigO, d(1.6)));
         pause(2.2);
 
+        // Slide 9's closing question — left open for the viewer to think about.
+        List<Animation> calm = new ArrayList<>();
+        calm.add(new FadeOut(eRing, d(0.5)));
+        for (MObject m : trail) calm.add(new FadeOut(m, d(0.5)));
+        play(calm.toArray(new Animation[0]));
+        remove(eRing);
+        for (MObject m : trail) remove(m);
+        resetQuadrants();
+
+        int[][] corners = {{0, COLS - 1}, {0, 0}, {ROWS - 1, 0}, {ROWS - 1, COLS - 1}};
+        Color[] cornerColor = {Colors.ORANGE, Colors.GOLD, Colors.GOLD, Colors.GOLD};
+        double belowY = MATRIX_TOP + ROWS * CELL_H + 24;
+        double[][] markAt = {
+            {colX(COLS - 1) + GRID_SHIFT, MATRIX_TOP - 22},
+            {colX(0) + GRID_SHIFT, MATRIX_TOP - 22},
+            {colX(0) + GRID_SHIFT, belowY},
+            {colX(COLS - 1) + GRID_SHIFT, belowY},
+        };
+        RectMob[] cornerRing = new RectMob[4];
+        List<MObject> cornerObjs = new ArrayList<>();
+        List<Animation> pop = new ArrayList<>();
+        for (int k = 0; k < 4; k++) {
+            cornerRing[k] = ring(corners[k][0], corners[k][1], cornerColor[k], GRID_SHIFT);
+            cornerRing[k].setScale(1.7);
+            TextMob mark = label(k == 0 ? "e" : "?", markAt[k][0], markAt[k][1], 28, cornerColor[k], false);
+            mark.setBold();
+            pop.add(new FadeIn(cornerRing[k], d(0.6)));
+            pop.add(new ScaleTo(cornerRing[k], 1.0, d(0.6)).setEasing(Easing.EASE_OUT));
+            pop.add(new FadeIn(mark, d(0.6)));
+            cornerObjs.add(cornerRing[k]);
+            cornerObjs.add(mark);
+        }
+        play(pop.toArray(new Animation[0]));
+        StrokeTextMob cq = captionAt("What other corner points I can start with?", PANEL_CENTER, 290, 28, Colors.GOLD);
+        play(new Write(cq, d(2.6)));
+        pause(0.5);
+        StrokeTextMob think = captionAt("Think about it", PANEL_CENTER, 350, 26, Colors.WHITE);
+        play(new Write(think, d(1.4)));
+        for (int rep = 0; rep < 3; rep++) {
+            play(new ScaleTo(cornerRing[1], 1.25, d(0.35)), new ScaleTo(cornerRing[2], 1.25, d(0.35)),
+                    new ScaleTo(cornerRing[3], 1.25, d(0.35)));
+            play(new ScaleTo(cornerRing[1], 1.0, d(0.4)), new ScaleTo(cornerRing[2], 1.0, d(0.4)),
+                    new ScaleTo(cornerRing[3], 1.0, d(0.4)));
+        }
+        pause(2.2);
+
         List<MObject> panel = new ArrayList<>();
         panel.add(cap);
         panel.add(header);
@@ -866,9 +970,10 @@ public class PDSSortedMatrixSearchScene extends Scene {
         panel.add(s1);
         panel.add(s2);
         panel.add(bigO);
-        panel.add(eRing);
+        panel.add(cq);
+        panel.add(think);
+        panel.addAll(cornerObjs);
         for (TextMob t : logicTxt) panel.add(t);
-        panel.addAll(trail);
         fadeOutAll(d(0.7), panel.toArray(new MObject[0]));
         resetQuadrants();
         shiftMatrix(-GRID_SHIFT, d(1.1), new ArrayList<>());
