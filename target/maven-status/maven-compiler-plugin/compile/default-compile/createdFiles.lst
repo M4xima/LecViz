@@ -98,6 +98,7 @@ com/lecviz/scenes/PDSShellSortScene.class
 com/lecviz/scenes/PDSDictionaryScene.class
 com/lecviz/scenes/PDSSortClipBase$SwipeOut.class
 com/lecviz/LecVizApp.class
+com/lecviz/tools/CombineClips.class
 com/lecviz/scenes/PDSSortClipBase$ArcMove.class
 com/lecviz/mobjects/RectMob.class
 com/lecviz/mobjects/LaTeXMob.class

@@ -21,6 +21,7 @@ import java.util.List;
  *   Slide 31  the four points come one by one, then each gets its picture: static data (an array
  *             is enough), dynamic data (nodes arriving and leaving), the problem dictating both
  *             algorithm and data structure, and algorithms using data structures as tools
+ *   End       "made by Karthik and Tejaswi" end card
  *
  * CS5013 Project: LecViz — Karthik (CS23B018) & Tejaswi (CS23B023)
  */
@@ -32,6 +33,7 @@ public class PDSWrapUpScene extends PDSSortClipBase {
     public void construct() {
         summary();
         dsapUsage();
+        madeBy();
     }
 
     // ── small drawing helpers (everything starts invisible) ──────────
@@ -460,5 +462,46 @@ public class PDSWrapUpScene extends PDSSortClipBase {
         pause(2.6);
         fadeOutAll(d(0.8), mine);
         pause(0.2);
+    }
+
+    // ── end card ─────────────────────────────────────────────────────
+
+    private void madeBy() {
+        List<MObject> mine = new ArrayList<>();
+        StrokeTextMob by = stroke("This video was made by", 0, -120, 38, Colors.LIGHT_GRAY, false);
+        play(new Write(by, d(2.0)));
+        mine.add(by);
+        pause(0.2);
+
+        // "Karthik & Tejaswi", written name by name, each in its own color
+        double size = 104, gap = 34;
+        double w1 = strokeW("Karthik", true, size), w2 = strokeW("&", true, size), w3 = strokeW("Tejaswi", true, size);
+        double left = -(w1 + w2 + w3 + 2 * gap) / 2;
+        StrokeTextMob n1 = stroke("Karthik", left + w1 / 2, 20, size, Colors.TEAL, true);
+        StrokeTextMob amp = stroke("&", left + w1 + gap + w2 / 2, 20, size, Colors.WHITE, true);
+        StrokeTextMob n2 = stroke("Tejaswi", left + w1 + w2 + 2 * gap + w3 / 2, 20, size, Colors.GOLD, true);
+        play(new Write(n1, d(1.8)));
+        play(new Write(amp, d(0.7)));
+        play(new Write(n2, d(1.8)));
+        mine.add(n1);
+        mine.add(amp);
+        mine.add(n2);
+
+        // a row of memory cells underneath, one lighting up after another
+        List<Animation> row = new ArrayList<>();
+        int cells = 9;
+        for (int i = 0; i < cells; i++) {
+            Color c = i < 4 ? Colors.TEAL : (i == 4 ? Colors.WHITE : Colors.GOLD);
+            RectMob r = rect((i - (cells - 1) / 2.0) * 62, 150, 52, 40, c, 0.3);
+            row.add(new FadeInAt(r, 0.1 * i, d(0.5)));
+            mine.add(r);
+        }
+        playAll(row);
+        TextMob course = label("CS5013  ·  LecViz", 0, 250, 30, Colors.GRAY, false, false);
+        play(new FadeIn(course, d(0.8)));
+        mine.add(course);
+        pause(3.2);
+        fadeOutAll(d(1.4), mine);
+        pause(0.4);
     }
 }

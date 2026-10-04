@@ -107,6 +107,20 @@ mvn exec:java -Dexec.mainClass="com.lecviz.LecVizApp"
 
 Output goes to `output/<scene>.mp4`.
 
+### Watching all the clips as one video
+
+The finished clips are in `output/arrays/` (one per slide range). The full lecture is too big for GitHub
+(about 800 MB, and GitHub rejects files over 100 MB), so it is not stored in the repo. After cloning or pulling,
+build it locally in a few seconds, with no re-encoding and nothing extra to install:
+
+```bash
+./combine.sh arrays          # Windows: combine.bat arrays
+```
+
+This writes `output/combined/arrays_full.mp4` (clips joined in slide order). The same command works for any other
+folder under `output/`, for example `./combine.sh lists` once that folder has clips. The `output/combined/` folder
+is git-ignored.
+
 ## Creating New Scenes
 
 1. Create a class extending `Scene`:
