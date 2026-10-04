@@ -1,5 +1,6 @@
 com/lecviz/scenes/PDSSortClipBase$TypeAt.class
 com/lecviz/scenes/PDSSortingScene$GrowRight.class
+com/lecviz/scenes/PDSArrayIntroScene.class
 com/lecviz/scenes/PDSArrayScene.class
 com/lecviz/mobjects/StrokeTextMob$Contour.class
 com/lecviz/animations/RevealCode.class
@@ -36,6 +37,7 @@ com/lecviz/mobjects/CubeGrid3D.class
 com/lecviz/scenes/PDSLinkedListScene.class
 com/lecviz/scenes/PDSSortedMatrixSearchScene$Wipe.class
 com/lecviz/scenes/PDSStackScene.class
+com/lecviz/scenes/PDSMatricesScene.class
 com/lecviz/scenes/PDSSortClipBase$SBar.class
 com/lecviz/generator/AutoSceneBuilder$GeneratedScene.class
 com/lecviz/scenes/PDSSelectionSortScene.class
@@ -90,6 +92,7 @@ com/lecviz/scenes/PDSClassworkScene$GrowRect.class
 com/lecviz/scenes/PDSClassworkScene.class
 com/lecviz/scenes/PDSQueensScene.class
 com/lecviz/scenes/PDSClassworkScene$QueenMob.class
+com/lecviz/scenes/PDSWrapUpScene.class
 com/lecviz/scenes/PDSTreeScene.class
 com/lecviz/scenes/PDSShellSortScene.class
 com/lecviz/scenes/PDSDictionaryScene.class

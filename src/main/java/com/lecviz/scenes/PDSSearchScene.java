@@ -11,16 +11,13 @@ import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Standalone clip: linear vs binary search on a sorted array.
  *
- * Opens with the array fading in plainly, then a pixelated translucent
- * green tint sweeps over it at a shallow angle from the first cell's
- * top-left corner to the last cell's bottom-right — and that green stays
- * for the rest of the clip as the array's base color, the same way a
- * color, once set, persists in the row/column-major clip.
+ * Opens with the array fading in plainly, then it fades to a translucent
+ * green that stays for the rest of the clip as the array's base color,
+ * the same way a color, once set, persists in the row/column-major clip.
  *
  * Linear search plays out as a real camera move that starts slow right
  * after the zoom-in, accelerates over its first two steps, then holds a
@@ -89,11 +86,9 @@ public class PDSSearchScene extends Scene {
         play(new Write(title, 2.6));
         hold(1.2);
 
-        // ── The array fades in first, plainly. Only once it's fully
-        //    visible does a translucent green sweep pass over it, at a
-        //    shallow angle from the top-left corner of the first cell
-        //    across to the bottom-right of the last — and that green
-        //    becomes the array's color for the rest of the clip. ──
+        // ── The array fades in first, plainly; once it is fully visible
+        //    it fades to green, and that becomes its color for the rest
+        //    of the clip. ──
         RectMob[] box = new RectMob[N];
         TextMob[] val = new TextMob[N];
         for (int i = 0; i < N; i++) {
@@ -120,15 +115,14 @@ public class PDSSearchScene extends Scene {
         play(settle);
         hold(0.5);
 
-        double left = cellX(0) - CELL_W / 2.0;
-        double top = ARRAY_Y - CELL_H / 2.0;
-        List<RectMob> pixels = pixelDissolve(left, top, N * CELL_W, CELL_H, Colors.GREEN, 1.6);
-        hold(0.3);
+        // the array settles into its green base color with a plain fade
+        Animation[] tint = new Animation[N * 2];
         for (int i = 0; i < N; i++) {
-            box[i].setFillColor(BASE_FILL);
-            box[i].setStrokeColor(BASE_STROKE);
+            tint[2 * i] = new ColorChange(box[i], BASE_FILL, 0.9);
+            tint[2 * i + 1] = new ColorChange(box[i], BASE_STROKE, 0.9, ColorChange.Target.STROKE);
         }
-        fadeOutAll(0.6, pixels.toArray(new MObject[0]));
+        play(tint);
+        hold(0.3);
 
         TextMob[] idxLabels = new TextMob[N];
         for (int i = 0; i < N; i++) {
@@ -318,59 +312,5 @@ public class PDSSearchScene extends Scene {
         add(v);
         play(new MoveTo(v, targetX, targetY, 0.6).setEasing(Easing.EASE_IN));
         return v;
-    }
-
-    /**
-     * A pixelated green color-wash that sweeps over an already-visible
-     * rectangle: small squares tint in at a time proportional to their
-     * position along a shallow-angle line (about 22 degrees off vertical)
-     * starting at the top-left corner, so the tint front leans slightly
-     * as it sweeps left to right rather than standing straight up or
-     * running at a full 45-degree diagonal. Returns the pixel overlays
-     * so the caller can bake the color into what's underneath before
-     * clearing them, instead of the sweep just fading away to nothing.
-     */
-    private List<RectMob> pixelDissolve(double left, double top, double width, double height, Color color, double duration) {
-        int cols = (int) (width / 16);
-        int rows = (int) (height / 16);
-        double pxW = width / cols, pxH = height / rows;
-
-        double tiltFromVertical = Math.toRadians(22); // within the requested 15-30 degree range
-        double tanTilt = Math.tan(tiltFromVertical);
-        double maxProgress = width + height * tanTilt;
-
-        List<RectMob> pixels = new ArrayList<>();
-        List<Double> revealAt = new ArrayList<>();
-        Random rng = new Random(11);
-
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                double localX = (c + 0.5) * pxW;
-                double localY = (r + 0.5) * pxH;
-                double sweep = (localX + localY * tanTilt) / maxProgress;
-                double jitter = (rng.nextDouble() - 0.5) * 0.03;
-                double t = Math.max(0, Math.min(1, sweep + jitter));
-
-                RectMob px = new RectMob(pxW + 0.6, pxH + 0.6);
-                px.setFillColor(Colors.withAlpha(color, 0.35));
-                px.setStrokeColor(Color.TRANSPARENT);
-                px.setPosition(left + localX, top + localY);
-                px.setOpacity(0);
-                add(px);
-                pixels.add(px);
-                revealAt.add(t);
-            }
-        }
-
-        int steps = 50;
-        for (int s = 1; s <= steps; s++) {
-            double globalT = s / (double) steps;
-            for (int p = 0; p < pixels.size(); p++) {
-                double op = Math.max(0, Math.min(1, (globalT - revealAt.get(p)) / 0.06));
-                pixels.get(p).setOpacity(op);
-            }
-            hold(duration / steps);
-        }
-        return pixels;
     }
 }
