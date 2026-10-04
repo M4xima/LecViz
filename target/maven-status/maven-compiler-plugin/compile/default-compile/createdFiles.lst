@@ -1,4 +1,6 @@
 com/lecviz/mobjects/ArrowMob.class
+com/lecviz/scenes/PDSSortingScene$GrowRight.class
+com/lecviz/scenes/PDSSortingScene.class
 com/lecviz/scenes/PDSArrayScene.class
 com/lecviz/mobjects/StrokeTextMob$Contour.class
 com/lecviz/animations/RevealCode.class
@@ -22,6 +24,7 @@ com/lecviz/animations/ColorChange$Target.class
 com/lecviz/animations/FadeIn.class
 com/lecviz/scenes/PDSSearchScene.class
 com/lecviz/core/Scene.class
+com/lecviz/scenes/PDSSortingScene$Line.class
 com/lecviz/scenes/PDSArraySceneV2.class
 com/lecviz/parser/PPTXParser$ParsedSlide.class
 com/lecviz/utils/Vec2.class
@@ -34,6 +37,7 @@ com/lecviz/mobjects/StrokeTextMob.class
 com/lecviz/mobjects/CircleMob.class
 com/lecviz/scenes/PDSSortedMatrixSearchScene.class
 com/lecviz/scenes/PDSClassworkScene$ArcMove.class
+com/lecviz/scenes/PDSSortingScene$SwipeOut.class
 com/lecviz/generator/AutoSceneBuilder$1.class
 com/lecviz/animations/ColorChange.class
 com/lecviz/mobjects/StackMob.class
@@ -60,6 +64,7 @@ com/lecviz/scenes/PDSDictionaryScene.class
 com/lecviz/LecVizApp.class
 com/lecviz/generator/AutoSceneBuilder$GeneratedScene.class
 com/lecviz/mobjects/RectMob.class
+com/lecviz/scenes/PDSSortingScene$DropIn.class
 com/lecviz/mobjects/TextMob.class
 com/lecviz/mobjects/LaTeXMob.class
 com/lecviz/scenes/PDSClassworkScene$Cell.class
