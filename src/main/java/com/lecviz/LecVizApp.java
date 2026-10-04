@@ -67,6 +67,9 @@ public class LecVizApp extends Application {
         SCENES.put("array_27", PDSBucketSortScene::new);
         SCENES.put("array_28", PDSCountingSortScene::new);
         SCENES.put("array_29", PDSRadixSortScene::new);
+        SCENES.put("array_6", PDSMatricesScene::new);
+        SCENES.put("array_30to31", PDSWrapUpScene::new);
+        SCENES.put("array_1to3", PDSArrayIntroScene::new);
     }
 
     @Override

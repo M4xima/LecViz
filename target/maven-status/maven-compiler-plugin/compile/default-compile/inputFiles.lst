@@ -32,6 +32,7 @@
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/parser/PPTXParser.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/parser/SlideParser.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSArrayExpressionsScene.java
+/Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSArrayIntroScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSArrayScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSArraySceneV2.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSArraySceneV3.java
@@ -46,6 +47,7 @@
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSInsertionSortScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSIntroScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSLinkedListScene.java
+/Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSMatricesScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSMergeSortScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSPriorityQueueScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSQueensScene.java
@@ -59,6 +61,7 @@
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSSortingScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSStackScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSTreeScene.java
+/Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSWrapUpScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/utils/Colors.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/utils/Easing.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/utils/Vec2.java
