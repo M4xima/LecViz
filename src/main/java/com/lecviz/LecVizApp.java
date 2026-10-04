@@ -59,6 +59,14 @@ public class LecVizApp extends Application {
         SCENES.put("array_14to15", PDSSortingScene::new);
         SCENES.put("array_16to17", PDSBubbleSortScene::new);
         SCENES.put("array_18to19", PDSInsertionSortScene::new);
+        SCENES.put("array_20to21", PDSShellSortScene::new);
+        SCENES.put("array_22", PDSSelectionSortScene::new);
+        SCENES.put("array_23", PDSHeapSortScene::new);
+        SCENES.put("array_24", PDSQuickSortScene::new);
+        SCENES.put("array_25", PDSMergeSortScene::new);
+        SCENES.put("array_27", PDSBucketSortScene::new);
+        SCENES.put("array_28", PDSCountingSortScene::new);
+        SCENES.put("array_29", PDSRadixSortScene::new);
     }
 
     @Override

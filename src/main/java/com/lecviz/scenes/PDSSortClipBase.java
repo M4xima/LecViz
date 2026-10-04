@@ -197,6 +197,32 @@ public abstract class PDSSortClipBase extends Scene {
         }
     }
 
+    /** Resizes a rectangle horizontally while moving its center. */
+    protected static final class ResizeX extends Animation {
+        private final RectMob r;
+        private final double tw, tcx;
+        private double sw, scx;
+
+        ResizeX(RectMob r, double tw, double tcx, double dur) {
+            super(r, dur, Easing.EASE_IN_OUT);
+            this.r = r;
+            this.tw = tw;
+            this.tcx = tcx;
+        }
+
+        @Override
+        public void begin() {
+            sw = r.getWidth();
+            scx = r.getPosition().x();
+        }
+
+        @Override
+        public void interpolate(double t) {
+            r.setSize(sw + (tw - sw) * t, r.getHeight());
+            r.setPosition(scx + (tcx - scx) * t, r.getPosition().y());
+        }
+    }
+
     /** A straight segment that can be drawn on progressively. */
     protected static final class LineMob extends MObject {
         private final double x1, y1, x2, y2;
@@ -467,7 +493,10 @@ public abstract class PDSSortClipBase extends Scene {
 
     // ── code listings ────────────────────────────────────────────────
 
-    private static final Pattern TOKEN = Pattern.compile("\\b(for|if|while|int|swap|key)\\b");
+    private static final Pattern TOKEN = Pattern.compile(
+            "\\b(for|if|while|int|void|swap|key|iimin|iipivot|quick|partition|mergeSort|merge|hide_back|deleteMax|printArray)\\b");
+    private static final java.util.Set<String> KEYWORDS = java.util.Set.of("for", "if", "while", "int", "void");
+    private static final java.util.Set<String> VARIABLES = java.util.Set.of("key", "iimin", "iipivot");
 
     /** A code listing on a translucent card: types in, syntax-colored, with a highlight band for the executing line. */
     protected final class CodeBox {
@@ -478,7 +507,7 @@ public abstract class PDSSortClipBase extends Scene {
         final List<Integer> runStart = new ArrayList<>();
         final List<Integer> runLen = new ArrayList<>();
         final String[] src;
-        final double pitch, charW, width;
+        final double pitch, charW, width, size;
         double left, top;
 
         CodeBox(String[] src, double left, double top, double size, double pitch) {
@@ -486,6 +515,7 @@ public abstract class PDSSortClipBase extends Scene {
             this.left = left;
             this.top = top;
             this.pitch = pitch;
+            this.size = size;
             this.charW = measure("MMMMMMMMMM", "Menlo", size, false) / 10.0;
             int maxLen = 0;
             for (String s : src) maxLen = Math.max(maxLen, s.length());
@@ -508,21 +538,56 @@ public abstract class PDSSortClipBase extends Scene {
             hl.setOpacity(0);
             add(hl);
 
-            for (int i = 0; i < src.length; i++) {
-                String line = src[i];
-                int pos = 0;
-                Matcher m = TOKEN.matcher(line);
-                List<int[]> cuts = new ArrayList<>();
-                while (m.find()) cuts.add(new int[]{m.start(), m.end()});
-                for (int[] c : cuts) {
-                    if (c[0] > pos) addRun(i, line, pos, c[0], size, Colors.WHITE, false);
-                    String word = line.substring(c[0], c[1]);
-                    Color col = word.equals("swap") ? Colors.GOLD : word.equals("key") ? Colors.RED : KEYWORD;
-                    addRun(i, line, c[0], c[1], size, col, word.equals("swap"));
-                    pos = c[1];
-                }
-                if (pos < line.length()) addRun(i, line, pos, line.length(), size, Colors.WHITE, false);
+            for (int i = 0; i < src.length; i++) buildLine(i);
+        }
+
+        /** Splits one source line into syntax-colored runs. */
+        private void buildLine(int i) {
+            String line = src[i];
+            int pos = 0;
+            Matcher m = TOKEN.matcher(line);
+            List<int[]> cuts = new ArrayList<>();
+            while (m.find()) cuts.add(new int[]{m.start(), m.end()});
+            for (int[] c : cuts) {
+                if (c[0] > pos) addRun(i, line, pos, c[0], size, Colors.WHITE, false);
+                String word = line.substring(c[0], c[1]);
+                boolean fn = !KEYWORDS.contains(word) && !VARIABLES.contains(word);
+                Color col = fn ? Colors.GOLD : VARIABLES.contains(word) ? Colors.RED : KEYWORD;
+                addRun(i, line, c[0], c[1], size, col, fn);
+                pos = c[1];
             }
+            if (pos < line.length()) addRun(i, line, pos, line.length(), size, Colors.WHITE, false);
+        }
+
+        /** A strike-through line across one token of a source line, drawn on later with DrawLine. */
+        LineMob strike(int line, String token) {
+            int idx = src[line].indexOf(token);
+            double x1 = left + 35 + idx * charW - 3, x2 = left + 35 + (idx + token.length()) * charW + 3;
+            LineMob l = new LineMob(x1, lineY(line) + 1, x2, lineY(line) + 1, Colors.withAlpha(Colors.LIGHT_GRAY, 0.95), 3);
+            add(l);
+            return l;
+        }
+
+        /** The line's old pieces fade out while the new text fades in over it. Returns the new objects. */
+        List<MObject> rewrite(List<Animation> into, int line, String newText, double dur) {
+            List<MObject> fresh = new ArrayList<>();
+            for (int r = runLine.size() - 1; r >= 0; r--) {
+                if (runLine.get(r) == line) {
+                    into.add(new FadeOut(runs.get(r), dur));
+                    runs.remove(r);
+                    runLine.remove(r);
+                    runStart.remove(r);
+                    runLen.remove(r);
+                }
+            }
+            src[line] = newText;
+            int before = runs.size();
+            buildLine(line);
+            for (int r = before; r < runs.size(); r++) {
+                into.add(new FadeIn(runs.get(r), dur));
+                fresh.add(runs.get(r));
+            }
+            return fresh;
         }
 
         private void addRun(int lineIdx, String line, int from, int to, double size, Color color, boolean bold) {
@@ -652,5 +717,124 @@ public abstract class PDSSortClipBase extends Scene {
         add(arr);
         TextMob lab = label(name, x, labY, 28, color, false, true);
         return new Ptr(arr, lab, x, labY);
+    }
+
+    // ── bars ─────────────────────────────────────────────────────────
+
+    protected static Color valueColor(int v, int lo, int hi) {
+        return Colors.interpolate(Colors.BLUE, Colors.ORANGE, hi <= lo ? 0 : (v - lo) / (double) (hi - lo));
+    }
+
+    /** One bar: a translucent rectangle with its value above it. */
+    protected final class SBar {
+        final RectMob rect;
+        final TextMob lbl;
+        final int value;
+        final double h;
+
+        SBar(int value, double x, double baseY, double w, double h, Color c) {
+            this.value = value;
+            this.h = h;
+            rect = new RectMob(w, h).setCornerRadius(8);
+            rect.setFillColor(Colors.withAlpha(c, 0.42));
+            rect.setStrokeColor(c);
+            rect.setStrokeWidth(2.5);
+            rect.setPosition(x, baseY - h / 2);
+            rect.setOpacity(0);
+            add(rect);
+            lbl = label(String.valueOf(value), x, baseY - h - 24, Math.min(34, w * 0.45), Colors.WHITE, false, true);
+        }
+
+        double x() { return rect.getPosition().x(); }
+        double y() { return rect.getPosition().y(); }
+    }
+
+    /** A row of bars standing on a baseline, with helpers to move, swap and color them. */
+    protected final class Bars {
+        final int n, lo, hi;
+        final SBar[] at;
+        final double cx, baseY, pitch, bw, unit, minH;
+        final List<TextMob> idx = new ArrayList<>();
+
+        Bars(int[] vals, double cx, double baseY, double pitch, double bw, double unit, double minH, boolean showIdx) {
+            this.n = vals.length;
+            this.cx = cx;
+            this.baseY = baseY;
+            this.pitch = pitch;
+            this.bw = bw;
+            this.unit = unit;
+            this.minH = minH;
+            int mn = Integer.MAX_VALUE, mx = Integer.MIN_VALUE;
+            for (int v : vals) { mn = Math.min(mn, v); mx = Math.max(mx, v); }
+            lo = mn;
+            hi = mx;
+            at = new SBar[n];
+            for (int i = 0; i < n; i++) {
+                at[i] = new SBar(vals[i], slotX(i), baseY, bw, minH + unit * vals[i], valueColor(vals[i], lo, hi));
+                if (showIdx) idx.add(label(String.valueOf(i), slotX(i), baseY + 28, 22, Colors.GRAY, false, false));
+            }
+        }
+
+        double slotX(int i) { return cx + (i - (n - 1) / 2.0) * pitch; }
+
+        List<MObject> parts() {
+            List<MObject> l = new ArrayList<>();
+            for (SBar b : at) { l.add(b.rect); l.add(b.lbl); }
+            l.addAll(idx);
+            return l;
+        }
+
+        void fadeIn(List<Animation> into, double stagger, double dur) {
+            for (int i = 0; i < n; i++) {
+                into.add(new FadeInAt(at[i].rect, stagger * i, dur));
+                into.add(new FadeInAt(at[i].lbl, stagger * i, dur));
+                if (!idx.isEmpty()) into.add(new FadeInAt(idx.get(i), stagger * i, dur));
+            }
+        }
+
+        void moveX(List<Animation> into, SBar b, double x, double bulge, double dur) {
+            into.add(new ArcMove(b.rect, x, b.y(), bulge, dur));
+            into.add(new ArcMove(b.lbl, x, b.lbl.getPosition().y(), bulge, dur));
+        }
+
+        void moveToSlot(List<Animation> into, SBar b, int slot, double bulge, double dur) {
+            moveX(into, b, slotX(slot), bulge, dur);
+        }
+
+        /** Moves a bar to a slot, standing on the baseline (any lift is undone). */
+        void place(List<Animation> into, SBar b, int slot, double bulge, double dur) {
+            double x = slotX(slot);
+            into.add(new ArcMove(b.rect, x, baseY - b.h / 2, bulge, dur));
+            into.add(new ArcMove(b.lbl, x, baseY - b.h - 24, bulge, dur));
+        }
+
+        /** Moves a bar straight up (dy > 0) or down. */
+        void lift(List<Animation> into, SBar b, double dy, double dur) {
+            into.add(new MoveTo(b.rect, b.x(), b.y() - dy, dur).setEasing(Easing.EASE_IN_OUT));
+            into.add(new MoveTo(b.lbl, b.x(), b.lbl.getPosition().y() - dy, dur).setEasing(Easing.EASE_IN_OUT));
+        }
+
+        /** Swaps the bars in slots i < j; the left one arcs high over the right one. */
+        void swap(List<Animation> into, int i, int j, double dur) {
+            SBar a = at[i], b = at[j];
+            moveToSlot(into, a, j, 130, dur);
+            moveToSlot(into, b, i, -50, dur);
+            at[i] = b;
+            at[j] = a;
+        }
+
+        void paint(List<Animation> into, SBar b, Color c, double dur) {
+            into.add(new ColorChange(b.rect, Colors.withAlpha(c, 0.42), dur));
+            into.add(new ColorChange(b.rect, c, dur, ColorChange.Target.STROKE));
+        }
+
+        void paintFinal(List<Animation> into, SBar b, double dur) {
+            into.add(new ColorChange(b.rect, FINAL_FILL, dur));
+            into.add(new ColorChange(b.rect, FINAL_STROKE, dur, ColorChange.Target.STROKE));
+        }
+
+        void paintOriginal(List<Animation> into, SBar b, double dur) {
+            paint(into, b, valueColor(b.value, lo, hi), dur);
+        }
     }
 }
