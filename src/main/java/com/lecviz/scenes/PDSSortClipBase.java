@@ -498,6 +498,12 @@ public abstract class PDSSortClipBase extends Scene {
     private static final java.util.Set<String> KEYWORDS = java.util.Set.of("for", "if", "while", "int", "void");
     private static final java.util.Set<String> VARIABLES = java.util.Set.of("key", "iimin", "iipivot");
 
+    /** Words the code listings color; a clip family can override these. Anything matched that is not a
+     *  keyword or a variable is drawn as a bold gold function/type name. */
+    protected Pattern codeTokens() { return TOKEN; }
+    protected java.util.Set<String> codeKeywords() { return KEYWORDS; }
+    protected java.util.Set<String> codeVariables() { return VARIABLES; }
+
     /** A code listing on a translucent card: types in, syntax-colored, with a highlight band for the executing line. */
     protected final class CodeBox {
         final RectMob card;
@@ -545,14 +551,14 @@ public abstract class PDSSortClipBase extends Scene {
         private void buildLine(int i) {
             String line = src[i];
             int pos = 0;
-            Matcher m = TOKEN.matcher(line);
+            Matcher m = codeTokens().matcher(line);
             List<int[]> cuts = new ArrayList<>();
             while (m.find()) cuts.add(new int[]{m.start(), m.end()});
             for (int[] c : cuts) {
                 if (c[0] > pos) addRun(i, line, pos, c[0], size, Colors.WHITE, false);
                 String word = line.substring(c[0], c[1]);
-                boolean fn = !KEYWORDS.contains(word) && !VARIABLES.contains(word);
-                Color col = fn ? Colors.GOLD : VARIABLES.contains(word) ? Colors.RED : KEYWORD;
+                boolean fn = !codeKeywords().contains(word) && !codeVariables().contains(word);
+                Color col = fn ? Colors.GOLD : codeVariables().contains(word) ? Colors.RED : KEYWORD;
                 addRun(i, line, c[0], c[1], size, col, fn);
                 pos = c[1];
             }

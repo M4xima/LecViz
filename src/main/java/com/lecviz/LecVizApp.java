@@ -70,6 +70,17 @@ public class LecVizApp extends Application {
         SCENES.put("array_6", PDSMatricesScene::new);
         SCENES.put("array_30to31", PDSWrapUpScene::new);
         SCENES.put("array_1to3", PDSArrayIntroScene::new);
+        SCENES.put("list_1to4", PDSListIntroScene::new);
+        SCENES.put("list_5to6", PDSListArrayScene::new);
+        SCENES.put("list_7to8", PDSListLinkedScene::new);
+        SCENES.put("list_10", PDSListInsertScene::new);
+        SCENES.put("list_13to14", PDSListTraverseScene::new);
+        SCENES.put("list_15", PDSListRemoveScene::new);
+        SCENES.put("list_16", PDSListPitfallsScene::new);
+        SCENES.put("list_17to18", PDSListDoublyScene::new);
+        SCENES.put("list_19to20", PDSListPolynomialScene::new);
+        SCENES.put("list_21", PDSListReverseScene::new);
+        SCENES.put("list_22", PDSListRecursionScene::new);
     }
 
     @Override
@@ -183,7 +194,10 @@ public class LecVizApp extends Application {
     }
 
     private void renderScene(String name, Scene scene) {
-        String outFile = "output/" + name + ".mp4";
+        // clips named array_* / list_* go straight into output/arrays/ and output/lists/
+        String folder = name.startsWith("array_") ? "arrays/" : name.startsWith("list_") ? "lists/" : "";
+        new java.io.File("output/" + folder).mkdirs();
+        String outFile = "output/" + folder + name + ".mp4";
         System.out.printf("Rendering scene '%s' → %s%n", name, outFile);
         scene.setOutputPath(outFile);
         scene.render();
