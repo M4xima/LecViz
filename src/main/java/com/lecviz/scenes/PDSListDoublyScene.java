@@ -72,11 +72,6 @@ public class PDSListDoublyScene extends PDSListClipBase {
         }
     }
 
-    private TextMob monoLeft(String text, double x, double y, double size, Color c) {
-        TextMob t = label(text, x, y, size, c, true, false);
-        t.setFontFamily("Menlo");
-        return t;
-    }
 
     private void flashNode(LNode n, Color c) {
         List<Animation> a = new ArrayList<>();

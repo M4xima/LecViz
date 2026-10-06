@@ -35,19 +35,7 @@ public class PDSListPolynomialScene extends PDSListClipBase {
 
     // ── helpers ──────────────────────────────────────────────────────
 
-    private LaTeXMob latex(String src, double size, double x, double y) {
-        LaTeXMob l = new LaTeXMob(src).setSize((float) size).setLatexColor(Colors.WHITE);
-        l.setPosition(x, y);
-        l.setOpacity(0);
-        add(l);
-        return l;
-    }
 
-    private TextMob monoLeft(String text, double x, double y, double size, Color c) {
-        TextMob t = label(text, x, y, size, c, true, false);
-        t.setFontFamily("Menlo");
-        return t;
-    }
 
     private StrokeTextMob line(String text, double left, double y, double size, Color c, boolean bold, List<List<MObject>> groups) {
         StrokeTextMob t = bold ? stroke(text, left + strokeW(text, true, size) / 2, y, size, c, true) : strokeLeft(text, left, y, size, c);

@@ -81,6 +81,21 @@ public class LecVizApp extends Application {
         SCENES.put("list_19to20", PDSListPolynomialScene::new);
         SCENES.put("list_21", PDSListReverseScene::new);
         SCENES.put("list_22", PDSListRecursionScene::new);
+        SCENES.put("list_23to24", PDSListStackScene::new);
+        SCENES.put("list_25", PDSListStackImplScene::new);
+        SCENES.put("list_26to27", PDSListParenScene::new);
+        SCENES.put("list_29to30", PDSListExprScene::new);
+        SCENES.put("list_31to32", PDSListFormsTableScene::new);
+        SCENES.put("list_33to34", PDSListEvalScene::new);
+        SCENES.put("list_35to36", PDSListInfixScene::new);
+        SCENES.put("list_37", PDSListRecursiveFormScene::new);
+        SCENES.put("list_38to39", PDSListQueueScene::new);
+        SCENES.put("list_40to41", PDSListCallCenterScene::new);
+        SCENES.put("list_42", PDSListSimScene::new);
+        SCENES.put("list_43to44", PDSListQueueArrayScene::new);
+        SCENES.put("list_45to46", PDSListQueueFullScene::new);
+        SCENES.put("list_47", PDSListPracticeScene::new);
+        SCENES.put("list_48", PDSListOutcomesScene::new);
     }
 
     @Override

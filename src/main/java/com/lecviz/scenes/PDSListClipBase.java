@@ -36,7 +36,7 @@ public abstract class PDSListClipBase extends PDSSortClipBase {
     private static final Pattern CODE = Pattern.compile(
             "\\b(class|struct|public|void|bool|int|char|for|if|else|while|do|return|new|delete|true|false|NULL|sizeof|"
                     + "Node|List|head|tail|ptr|previous|newptr|toberemoved|current|insert|find|remove|print|size|"
-                    + "free|malloc|printf|Element|Polynomial|initialize|add)\\b");
+                    + "free|malloc|printf|Element|Polynomial|initialize|add|Stack|Queue|push|pop|search|isEmpty|front|back|peek|enqueue|dequeue)\\b");
     private static final Set<String> KW = Set.of("class", "struct", "public", "void", "bool", "int", "char", "for",
             "if", "else", "while", "do", "return", "new", "delete", "true", "false", "NULL", "sizeof");
     private static final Set<String> VAR = Set.of("head", "tail", "ptr", "previous", "newptr", "toberemoved", "current");
@@ -596,6 +596,172 @@ public abstract class PDSListClipBase extends PDSSortClipBase {
         }
 
         List<MObject> all() { return all; }
+    }
+
+
+    // ── text helpers ─────────────────────────────────────────────────
+
+    protected LaTeXMob latex(String src, double size, double x, double y) {
+        LaTeXMob l = new LaTeXMob(src).setSize((float) size).setLatexColor(Colors.WHITE);
+        l.setPosition(x, y);
+        l.setOpacity(0);
+        add(l);
+        return l;
+    }
+
+    protected TextMob monoLeft(String text, double x, double y, double size, Color c) {
+        TextMob t = label(text, x, y, size, c, true, false);
+        t.setFontFamily("Menlo");
+        return t;
+    }
+
+    // ── a vertical stack with a moving "top" arrow ───────────────────
+
+    /** An open-topped container whose items drop in (push) and lift out (pop); a gold arrow follows the top. */
+    protected final class VStack {
+        final double cx, baseY, w, h, gap = 10;
+        final List<Cell> items = new ArrayList<>();
+        final Link box, topArrow;
+        final TextMob topLab;
+        final double arrowY0, labX;
+
+        VStack(double cx, double baseY, double w, double h, int cap, String topName) { this(cx, baseY, w, h, cap, topName, 1); }
+
+        /** side = 1 puts the "top" arrow to the right of the stack, -1 to the left. */
+        VStack(double cx, double baseY, double w, double h, int cap, String topName, int side) {
+            this.cx = cx;
+            this.baseY = baseY;
+            this.w = w;
+            this.h = h;
+            double top = baseY - cap * (h + gap) - 10;
+            box = new Link(new double[]{cx - w / 2 - 14, cx - w / 2 - 14, cx + w / 2 + 14, cx + w / 2 + 14},
+                    new double[]{top, baseY + 12, baseY + 12, top}, Colors.withAlpha(Colors.WHITE, 0.6), 4, false);
+            add(box);
+            arrowY0 = slotY(0);
+            topArrow = new Link(new double[]{cx + side * (w / 2 + 120), cx + side * (w / 2 + 28)}, new double[]{arrowY0, arrowY0}, Colors.GOLD, 3.6, true);
+            add(topArrow);
+            labX = cx + side * (w / 2 + 180);
+            topLab = label(topName, labX, arrowY0, 30, Colors.GOLD, false, true);
+        }
+
+        double slotY(int i) { return baseY - h / 2 - i * (h + gap); }
+
+        List<MObject> parts() {
+            List<MObject> l = new ArrayList<>();
+            l.add(box);
+            l.add(topArrow);
+            l.add(topLab);
+            for (Cell c : items) l.addAll(c.parts());
+            return l;
+        }
+
+        void showBox() { play(new DrawLink(box, d(0.8))); }
+
+        void showTop() {
+            List<Animation> a = new ArrayList<>();
+            moveTop(a, 0.01);
+            a.add(new FadeIn(topArrow, d(0.5)));
+            a.add(new FadeIn(topLab, d(0.5)));
+            playAll(a);
+        }
+
+        void moveTop(List<Animation> into, double dur) {
+            double y = slotY(items.size() - 1);
+            into.add(new MoveTo(topArrow, 0, y - arrowY0, dur).setEasing(Easing.EASE_IN_OUT));
+            into.add(new MoveTo(topLab, labX, y, dur).setEasing(Easing.EASE_IN_OUT));
+        }
+
+        Cell push(String v, Color c) {
+            Cell cell = new Cell(v, cx, slotY(items.size()), w, h, c, Math.min(34, h * 0.56));
+            items.add(cell);
+            List<Animation> a = new ArrayList<>();
+            a.add(new DropIn(cell.box, 130, 0, d(0.6)));
+            a.add(new DropIn(cell.text, 130, 0, d(0.6)));
+            moveTop(a, d(0.6));
+            playAll(a);
+            return cell;
+        }
+
+        /** The top item leaves to (toX, toY) and stays visible there. */
+        Cell popTo(double toX, double toY) {
+            Cell cell = items.remove(items.size() - 1);
+            List<Animation> a = new ArrayList<>();
+            cell.moveTo(a, toX, toY, 70, d(0.8));
+            moveTop(a, d(0.8));
+            playAll(a);
+            return cell;
+        }
+
+        /** The top item lifts out and fades away. */
+        Cell popAway() {
+            Cell cell = items.remove(items.size() - 1);
+            List<Animation> a = new ArrayList<>();
+            cell.moveTo(a, cx, cell.y - 130, 0, d(0.7));
+            cell.fadeOut(a, d(0.7));
+            moveTop(a, d(0.7));
+            playAll(a);
+            return cell;
+        }
+
+        Cell top() { return items.get(items.size() - 1); }
+    }
+
+    // ── expression trees ─────────────────────────────────────────────
+
+    /** A tree node: a circle with a label (an operator or an operand). */
+    protected final class TNode {
+        final CircleMob ring;
+        final TextMob text;
+        final String label;
+        final double x, y, r;
+        TNode left, right;
+
+        TNode(String label, double x, double y, double r, Color c) {
+            this.label = label;
+            this.x = x;
+            this.y = y;
+            this.r = r;
+            ring = new CircleMob(r);
+            ring.setFillColor(Colors.withAlpha(c, 0.28));
+            ring.setStrokeColor(Colors.withAlpha(c, 0.95));
+            ring.setStrokeWidth(3);
+            ring.setPosition(x, y);
+            ring.setOpacity(0);
+            add(ring);
+            text = label(label, x, y, r * 1.0, Colors.WHITE, false, true);
+        }
+
+        List<MObject> parts() {
+            List<MObject> l = new ArrayList<>();
+            l.add(ring);
+            l.add(text);
+            return l;
+        }
+
+        void fadeIn(List<Animation> into, double delay, double dur) {
+            into.add(new FadeInAt(ring, delay, dur));
+            into.add(new FadeInAt(text, delay, dur));
+        }
+
+        void paint(List<Animation> into, Color c, double dur) {
+            into.add(new ColorChange(ring, Colors.withAlpha(c, 0.42), dur));
+            into.add(new ColorChange(ring, Colors.withAlpha(c, 0.95), dur, ColorChange.Target.STROKE));
+        }
+    }
+
+    /** A line from the lower edge of a parent circle to the upper edge of a child circle. */
+    protected Link treeEdge(TNode p, TNode c) {
+        double dx = c.x - p.x, dy = c.y - p.y, len = Math.hypot(dx, dy);
+        double ux = dx / len, uy = dy / len;
+        Link l = new Link(new double[]{p.x + ux * p.r, c.x - ux * c.r}, new double[]{p.y + uy * p.r, c.y - uy * c.r},
+                Colors.withAlpha(Colors.LIGHT_GRAY, 0.8), 3, false);
+        add(l);
+        return l;
+    }
+
+    /** One token cell in a row. */
+    protected Cell tokCell(String t, double x, double y, double w, double h, Color c, double size) {
+        return new Cell(t, x, y, w, h, c, size);
     }
 
     // ── pointers & narration ─────────────────────────────────────────

@@ -56,11 +56,6 @@ public class PDSListPitfallsScene extends PDSListClipBase {
 
     // ── helpers ──────────────────────────────────────────────────────
 
-    private TextMob monoLeft(String text, double x, double y, double size, Color c) {
-        TextMob t = label(text, x, y, size, c, true, false);
-        t.setFontFamily("Menlo");
-        return t;
-    }
 
     /** The stage's code line and comment at the top left. Returns the objects. */
     private List<MObject> stageTitle(String num, String code, String comment) {
