@@ -574,6 +574,14 @@ public abstract class PDSSortClipBase extends Scene {
             return l;
         }
 
+        /** A strike-through across {@code len} characters of a source line, starting at column {@code col}. */
+        LineMob strikeAt(int line, int col, int len) {
+            double x1 = left + 35 + col * charW - 3, x2 = left + 35 + (col + len) * charW + 3;
+            LineMob l = new LineMob(x1, lineY(line) + 1, x2, lineY(line) + 1, Colors.withAlpha(Colors.RED, 0.95), 3.4);
+            add(l);
+            return l;
+        }
+
         /** The line's old pieces fade out while the new text fades in over it. Returns the new objects. */
         List<MObject> rewrite(List<Animation> into, int line, String newText, double dur) {
             List<MObject> fresh = new ArrayList<>();
