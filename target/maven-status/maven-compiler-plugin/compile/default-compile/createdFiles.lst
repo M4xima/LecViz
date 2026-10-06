@@ -100,6 +100,7 @@ com/lecviz/scenes/PDSQuickSortScene.class
 com/lecviz/scenes/PDSSearchScene.class
 com/lecviz/scenes/PDSListArrayScene.class
 com/lecviz/scenes/PDSListClipBase$TNode.class
+com/lecviz/scenes/PDSListOutcomesScene.class
 com/lecviz/scenes/PDSSortingScene$Line.class
 com/lecviz/scenes/PDSArraySceneV2.class
 com/lecviz/scenes/PDSListClipBase$EraseLink.class

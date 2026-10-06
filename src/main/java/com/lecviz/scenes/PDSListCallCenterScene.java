@@ -205,11 +205,11 @@ public class PDSListCallCenterScene extends PDSListClipBase {
         mine.add(head);
         // the two records
         RectMob ur = panel(-380, -360, 600, 110, Colors.BLUE, 0.1);
-        TextMob un = label("User", -600, -360, 36, Colors.BLUE, false, true);
+        TextMob un = label("User", -650, -360, 36, Colors.BLUE, true, true);
         Cell uid = tokCell("id", -420, -360, 110, 60, Colors.BLUE, 30);
         Cell ut = tokCell("call time", -270, -360, 170, 60, Colors.BLUE, 30);
         RectMob or = panel(330, -360, 440, 110, Colors.PINK, 0.1);
-        TextMob on = label("Operator", 170, -360, 36, Colors.PINK, false, true);
+        TextMob on = label("Operator", 140, -360, 36, Colors.PINK, true, true);
         Cell oid = tokCell("id", 400, -360, 110, 60, Colors.PINK, 30);
         List<Animation> r = new ArrayList<>();
         for (MObject m : new MObject[]{ur, un, or, on}) r.add(new FadeIn(m, d(0.6)));

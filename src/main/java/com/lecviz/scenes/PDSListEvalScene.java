@@ -197,8 +197,8 @@ public class PDSListEvalScene extends PDSListClipBase {
 
     private void prefix() {
         head = writeHeading("Prefix Evaluation");
-        narrX = 290;
-        tx = 300;
+        narrX = 240;
+        tx = 240;
         pause(0.4);
         code = new CodeBox(new String[]{
                 "For each symbol in the expression               ",
@@ -222,9 +222,9 @@ public class PDSListEvalScene extends PDSListClipBase {
         // the slide's five prefix expressions with their values
         String[] pre = {"* + 1 2 – 3 4", "+ 1 * 2 – 3 4", "- + 1 * 2 3 4", "- * + 1 2 3 4", "+ 1 - * 2 3 4"};
         String[] val = {"–3", "–1", "3", "5", "3"};
-        TextMob th = label("Prefix", 725, -255, 30, Colors.WHITE, false, true);
+        TextMob th = label("Prefix", 690, -255, 30, Colors.WHITE, false, true);
         TextMob vh = label("value", 865, -255, 30, Colors.WHITE, false, true);
-        RectMob hb = panel(725, -255, 240, 52, Colors.BLUE, 0.35);
+        RectMob hb = panel(690, -255, 240, 52, Colors.BLUE, 0.35);
         RectMob hv = panel(865, -255, 90, 52, Colors.BLUE, 0.35);
         List<Animation> ta = new ArrayList<>();
         for (MObject m : new MObject[]{hb, hv, th, vh}) ta.add(new FadeIn(m, d(0.5)));
@@ -232,9 +232,9 @@ public class PDSListEvalScene extends PDSListClipBase {
         RectMob[] rowB = new RectMob[5];
         for (int r = 0; r < 5; r++) {
             double y = -255 + 58 * (r + 1);
-            rowB[r] = panel(725, y, 240, 52, Colors.GOLD, 0.2);
+            rowB[r] = panel(690, y, 240, 52, Colors.GOLD, 0.2);
             RectMob vb = panel(865, y, 90, 52, Colors.WHITE, 0.06);
-            TextMob pt = mono(pre[r], 725, y, 22, Colors.WHITE);
+            TextMob pt = mono(pre[r], 690, y, 22, Colors.WHITE);
             valT[r] = label("", 865, y, 30, Colors.GREEN, false, true);
             ta.add(new FadeInAt(rowB[r], 0.12 * r, d(0.5)));
             ta.add(new FadeInAt(vb, 0.12 * r, d(0.5)));

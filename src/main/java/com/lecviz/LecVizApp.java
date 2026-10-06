@@ -94,7 +94,8 @@ public class LecVizApp extends Application {
         SCENES.put("list_42", PDSListSimScene::new);
         SCENES.put("list_43to44", PDSListQueueArrayScene::new);
         SCENES.put("list_45to46", PDSListQueueFullScene::new);
-        SCENES.put("list_47to48", PDSListPracticeScene::new);
+        SCENES.put("list_47", PDSListPracticeScene::new);
+        SCENES.put("list_48", PDSListOutcomesScene::new);
     }
 
     @Override
