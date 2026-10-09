@@ -116,6 +116,23 @@ public class LecVizApp extends Application {
         SCENES.put("tree_15", PDSTreeSizeScene::new);
         SCENES.put("tree_16", PDSTreePostorderScene::new);
         SCENES.put("tree_17", PDSTreeStoryScene::new);
+        SCENES.put("tree_18to19", PDSTreeKaryScene::new);
+        SCENES.put("tree_20a", () -> new PDSTreeBinPropsScene(1));
+        SCENES.put("tree_20b", () -> new PDSTreeBinPropsScene(2));
+        SCENES.put("tree_21", PDSTreeExprScene::new);
+        SCENES.put("tree_22", () -> new PDSTreeWalkScene(true));
+        SCENES.put("tree_23", () -> new PDSTreeWalkScene(false));
+        SCENES.put("tree_24to25", PDSTreeFormsScene::new);
+        SCENES.put("tree_26", PDSTreeEvalScene::new);
+        SCENES.put("tree_27", PDSTreePostfixTreeScene::new);
+        SCENES.put("tree_28", PDSTreeOpsScene::new);
+        SCENES.put("tree_29", PDSTreeQuestionsScene::new);
+        SCENES.put("tree_30", PDSTreeCodingScene::new);
+        SCENES.put("tree_31", PDSTreeCodeTreeScene::new);
+        SCENES.put("tree_32to33", PDSTreeFreqScene::new);
+        SCENES.put("tree_34", PDSTreeShorterScene::new);
+        SCENES.put("tree_35", PDSTreePrefixScene::new);
+        SCENES.put("tree_36", PDSTreeEndScene::new);
     }
 
     @Override

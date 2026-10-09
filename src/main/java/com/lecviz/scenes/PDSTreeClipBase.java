@@ -38,9 +38,10 @@ public abstract class PDSTreeClipBase extends PDSListClipBase {
     // ── tree description ─────────────────────────────────────────────
 
     protected static final class GN {
-        final String name;
+        String name;
         final List<GN> kids = new ArrayList<>();
         GN parent;
+        int slot = -1;            // binary trees: 0 = left child, 1 = right child
         int depth;
         double x, y, hw, hh;
         Color color = LEAF_C;
@@ -60,6 +61,113 @@ public abstract class PDSTreeClipBase extends PDSListClipBase {
             n.kids.add(k);
         }
         return n;
+    }
+
+    /** A binary tree node: either child may be null (the other keeps its left/right side). */
+    protected static GN bin(String name, GN left, GN right) {
+        GN n = new GN(name);
+        if (left != null) { left.parent = n; left.slot = 0; n.kids.add(left); }
+        if (right != null) { right.parent = n; right.slot = 1; n.kids.add(right); }
+        return n;
+    }
+
+    protected static GN bin(String name) { return bin(name, null, null); }
+
+    protected static GN leftOf(GN n) { for (GN k : n.kids) if (k.slot == 0) return k; return null; }
+
+    protected static GN rightOf(GN n) { for (GN k : n.kids) if (k.slot == 1) return k; return null; }
+
+    // ── expressions: parse infix into a binary tree, write the three forms ──
+
+    private static int prec(char c) { return c == '+' || c == '-' ? 1 : 2; }
+
+    private static boolean isOp(char c) { return c == '+' || c == '-' || c == '*' || c == '/'; }
+
+    /** Parses an infix expression of single-character operands, + - * / and parentheses (left to right). */
+    protected static GN parseInfix(String src) {
+        String s = src.replace(" ", "");
+        java.util.Deque<GN> out = new java.util.ArrayDeque<>();
+        java.util.Deque<Character> ops = new java.util.ArrayDeque<>();
+        for (char c : s.toCharArray()) {
+            if (c == '(') ops.push(c);
+            else if (c == ')') {
+                while (ops.peek() != '(') reduce(out, ops.pop());
+                ops.pop();
+            } else if (isOp(c)) {
+                while (!ops.isEmpty() && ops.peek() != '(' && prec(ops.peek()) >= prec(c)) reduce(out, ops.pop());
+                ops.push(c);
+            } else out.push(bin(String.valueOf(c)));
+        }
+        while (!ops.isEmpty()) reduce(out, ops.pop());
+        return out.pop();
+    }
+
+    private static void reduce(java.util.Deque<GN> out, char op) {
+        GN r = out.pop(), l = out.pop();
+        out.push(bin(String.valueOf(op), l, r));
+    }
+
+    /** The expression a tree stands for, written with the fewest parentheses that keep its meaning. */
+    protected static String infixOf(GN n) {
+        if (n.leaf()) return n.name;
+        GN l = leftOf(n), r = rightOf(n);
+        char op = n.name.charAt(0);
+        String ls = infixOf(l), rs = infixOf(r);
+        if (!l.leaf() && prec(l.name.charAt(0)) < prec(op)) ls = "(" + ls + ")";
+        if (!r.leaf() && (prec(r.name.charAt(0)) < prec(op) || (prec(r.name.charAt(0)) == prec(op)))) rs = "(" + rs + ")";
+        return ls + op + rs;
+    }
+
+    protected static void inorderInto(GN n, List<GN> out) {
+        GN l = leftOf(n), r = rightOf(n);
+        if (l != null) inorderInto(l, out);
+        out.add(n);
+        if (r != null) inorderInto(r, out);
+    }
+
+    /** Names of the nodes in the given order, joined. */
+    protected static String joined(List<GN> order, String sep) {
+        StringBuilder sb = new StringBuilder();
+        for (GN n : order) sb.append(sb.length() == 0 ? "" : sep).append(n.name);
+        return sb.toString();
+    }
+
+    protected static String prefixOf(GN root) {
+        List<GN> l = new ArrayList<>();
+        preorderInto(root, l);
+        return joined(l, "");
+    }
+
+    protected static String postfixOf(GN root) {
+        List<GN> l = new ArrayList<>();
+        postorderInto(root, l);
+        return joined(l, "");
+    }
+
+    /**
+     * A binary tree made of 0/1 paths from the root (0 = left, 1 = right): every path ends in a node with the
+     * given label; the nodes on the way have an empty name.
+     */
+    protected static GN fromPaths(String[] paths, String[] labels) {
+        GN root = new GN("");
+        for (int i = 0; i < paths.length; i++) {
+            GN n = root;
+            for (char c : paths[i].toCharArray()) {
+                int slot = c == '0' ? 0 : 1;
+                GN next = null;
+                for (GN k : n.kids) if (k.slot == slot) next = k;
+                if (next == null) {
+                    next = new GN("");
+                    next.slot = slot;
+                    next.parent = n;
+                    n.kids.add(next);
+                    n.kids.sort((x, y) -> Integer.compare(x.slot, y.slot));
+                }
+                n = next;
+            }
+            n.name = labels[i];
+        }
+        return root;
     }
 
     /** The node reached from {@code from} by following the given child indexes. */
@@ -127,6 +235,12 @@ public abstract class PDSTreeClipBase extends PDSListClipBase {
          */
         GT(GN root, double cx, double topY, double levelGap, double slotGap, double r, double fs,
            boolean arrows, Function<GN, Color> colorOf) {
+            this(root, cx, topY, levelGap, slotGap, r, fs, arrows, colorOf, false);
+        }
+
+        /** inorder = true lays a binary tree out by in-order position (a left child always hangs to the left). */
+        GT(GN root, double cx, double topY, double levelGap, double slotGap, double r, double fs,
+           boolean arrows, Function<GN, Color> colorOf, boolean inorder) {
             this.root = root;
             this.cx = cx;
             this.topY = topY;
@@ -147,7 +261,8 @@ public abstract class PDSTreeClipBase extends PDSListClipBase {
                 n.color = colorOf != null ? colorOf.apply(n) : (n == root ? ROOT_C : n.leaf() ? LEAF_C : INNER_C);
             }
             cursor = 0;
-            place(root, slotGap);
+            if (inorder) placeIn(root, 2 * r + slotGap);
+            else place(root, slotGap);
             double mn = Double.MAX_VALUE, mx = -Double.MAX_VALUE;
             for (GN n : nodes) {
                 mn = Math.min(mn, n.x - n.hw);
@@ -165,6 +280,14 @@ public abstract class PDSTreeClipBase extends PDSListClipBase {
         private void assignDepth(GN n, int d) {
             n.depth = d;
             for (GN k : n.kids) assignDepth(k, d + 1);
+        }
+
+        private void placeIn(GN n, double pitch) {
+            GN l = leftOf(n), r = rightOf(n);
+            if (l != null) placeIn(l, pitch);
+            n.x = cursor;
+            cursor += pitch;
+            if (r != null) placeIn(r, pitch);
         }
 
         private void place(GN n, double slot) {
@@ -296,6 +419,14 @@ public abstract class PDSTreeClipBase extends PDSListClipBase {
         void pop(GN n) {
             play(new ScaleTo(n.shape, 1.22, d(0.18)), new ScaleTo(n.text, 1.22, d(0.18)));
             play(new ScaleTo(n.shape, 1.0, d(0.22)), new ScaleTo(n.text, 1.0, d(0.22)));
+        }
+
+        /** A 0/1-style label on the edge into n: left of the edge for a left child, right of it otherwise. Hidden. */
+        TextMob edgeTag(GN n, String text, Color c, double size) {
+            GN p = n.parent;
+            double mx = (p.x + n.x) / 2, my = (p.y + p.hh + n.y - n.hh) / 2;
+            double off = 18 + size * 0.4;
+            return label(text, mx + (n.slot == 0 ? -off : off), my - 4, size, c, false, true);
         }
 
         /** Small label beside a node (an order number, a size, a depth). Created hidden. */
