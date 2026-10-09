@@ -37,6 +37,9 @@ public abstract class PDSSortClipBase extends Scene {
 
     // ── pacing / palette ─────────────────────────────────────────────
 
+    /** Monospace family for code; macOS has Menlo, other systems can set -Dlecviz.mono="DejaVu Sans Mono". */
+    protected static final String MONO = System.getProperty("lecviz.mono", "Menlo");
+
     protected static final double PACE = 1.15;
     protected double d(double seconds) { return seconds * PACE; }
     protected void pause(double seconds) { hold(seconds * PACE); }
@@ -526,7 +529,7 @@ public abstract class PDSSortClipBase extends Scene {
             this.top = top;
             this.pitch = pitch;
             this.size = size;
-            this.charW = measure("MMMMMMMMMM", "Menlo", size, false) / 10.0;
+            this.charW = measure("MMMMMMMMMM", MONO, size, false) / 10.0;
             int maxLen = 0;
             for (String s : src) maxLen = Math.max(maxLen, s.length());
             this.width = maxLen * charW + 70;
@@ -612,7 +615,7 @@ public abstract class PDSSortClipBase extends Scene {
             String piece = line.substring(from, to);
             if (piece.trim().isEmpty()) return;
             TextMob t = new TextMob(piece).setFontSize(size).setFillColor(color);
-            t.setFontFamily("Menlo");
+            t.setFontFamily(MONO);
             t.setAlignment(TextAlignment.LEFT);
             if (bold) t.setBold();
             t.setPosition(left + 35 + from * charW, lineY(lineIdx));

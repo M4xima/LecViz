@@ -43,11 +43,11 @@ public class VideoRenderer {
         // (no B-frames) and visibly soft on flat colors/text edges. This
         // Mac has Apple's hardware H.264 encoder, which does real High
         // profile at much better quality — and it's faster too.
-        recorder.setVideoCodecName("h264_videotoolbox");
+        recorder.setVideoCodecName(System.getProperty("lecviz.codec", System.getenv().getOrDefault("LECVIZ_CODEC", "h264_videotoolbox")));
         recorder.setFormat("mp4");
         recorder.setFrameRate(fps);
         recorder.setPixelFormat(org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_YUV420P);
-        recorder.setVideoOption("profile", "high");
+        if (recorder.getVideoCodecName() == null || recorder.getVideoCodecName().contains("videotoolbox")) recorder.setVideoOption("profile", "high");
         recorder.setVideoBitrate(bitrate); // default ~20 Mbps — generous for crisp flat color + text at 1080p60
         recorder.start();
 

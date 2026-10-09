@@ -99,6 +99,23 @@ public class LecVizApp extends Application {
         SCENES.put("pixel_19a", () -> new PDSInsertionPixelScene(2));
         SCENES.put("pixel_19b", () -> new PDSInsertionPixelScene(3));
         SCENES.put("list_48", PDSListOutcomesScene::new);
+        SCENES.put("tree_1to2", PDSTreeIntroScene::new);
+        SCENES.put("tree_3", PDSTreeNomenScene::new);
+        SCENES.put("tree_4", PDSTreeDefinitionScene::new);
+        SCENES.put("tree_5", PDSTreeRolesScene::new);
+        SCENES.put("tree_6", PDSTreePropertiesScene::new);
+        SCENES.put("tree_7", PDSTreeTermsScene::new);
+        SCENES.put("tree_8", PDSTreeExercisesScene::new);
+        SCENES.put("tree_9", PDSTreeOutcomesScene::new);
+        SCENES.put("tree_10", PDSTreeImplScene::new);
+        SCENES.put("tree_11", PDSTreeDirScene::new);
+        SCENES.put("tree_13", PDSTreeTraversalsScene::new);
+        SCENES.put("tree_14a", PDSTreePreorderRecScene::new);
+        SCENES.put("tree_14b", PDSTreePreorderIterScene::new);
+        SCENES.put("tree_14c", PDSTreeIndentScene::new);
+        SCENES.put("tree_15", PDSTreeSizeScene::new);
+        SCENES.put("tree_16", PDSTreePostorderScene::new);
+        SCENES.put("tree_17", PDSTreeStoryScene::new);
     }
 
     @Override
@@ -213,7 +230,7 @@ public class LecVizApp extends Application {
 
     private void renderScene(String name, Scene scene) {
         // clips named array_* / list_* go straight into output/arrays/ and output/lists/
-        String folder = name.startsWith("array_") ? "arrays/" : name.startsWith("list_") ? "lists/" : name.startsWith("pixel_") ? "pixel/" : "";
+        String folder = name.startsWith("array_") ? "arrays/" : name.startsWith("list_") ? "lists/" : name.startsWith("pixel_") ? "pixel/" : name.startsWith("tree_") ? "trees/" : "";
         new java.io.File("output/" + folder).mkdirs();
         String outFile = "output/" + folder + name + ".mp4";
         System.out.printf("Rendering scene '%s' → %s%n", name, outFile);
