@@ -31,10 +31,14 @@ import java.util.concurrent.CountDownLatch;
  */
 public abstract class Scene {
 
-    // 1080p canvas
-    public static final int WIDTH  = 1920;
-    public static final int HEIGHT = 1080;
+    // Canvas size: 1080p landscape by default; a scene that wants another shape (for example a vertical 1080x1920
+    // short) overrides canvasWidth() / canvasHeight(). The values are set for the duration of render().
+    public static int WIDTH  = 1920;
+    public static int HEIGHT = 1080;
     public static final int FPS    = 60;  // 60fps for smooth animations
+
+    /** Seconds of video rendered so far; objects can read it for idle animation (blinking, breathing). */
+    public static volatile double clock = 0;
 
     protected Canvas canvas;
     protected GraphicsContext gc;
@@ -55,6 +59,32 @@ public abstract class Scene {
     // scales everything around that point. Defaults (0, 0, 1) match the
     // untransformed full-canvas framing every scene starts in.
     private double cameraX = 0, cameraY = 0, cameraZoom = 1.0;
+
+    // --- Frame clock and sound log ---
+    private long frameCount = 0;
+    private final List<Sfx.Event> sfxEvents = new ArrayList<>();
+
+    /** Canvas size of this scene; override both for a non-1080p-landscape video. */
+    protected int canvasWidth() { return 1920; }
+    protected int canvasHeight() { return 1080; }
+
+    /** Target video bitrate in bits per second; busy pixel-art scenes can ask for less to keep files small. */
+    protected int videoBitrate() { return 20_000_000; }
+
+    /** Time of the next frame to be rendered, in seconds. */
+    protected double now() { return frameCount / (double) FPS; }
+
+    /** Logs a sound effect at the current time (see {@link Sfx}); {@code pan} runs from -1 (left) to 1 (right). */
+    protected void sfx(String name, double a, double pan) {
+        if (recording) sfxEvents.add(new Sfx.Event(now(), name, a, pan));
+    }
+
+    protected void sfx(String name) { sfx(name, 0, 0); }
+
+    /** Like {@link #sfx(String, double, double)} but {@code delay} seconds from now (for sounds inside a running animation). */
+    protected void sfxAt(double delay, String name, double a, double pan) {
+        if (recording) sfxEvents.add(new Sfx.Event(now() + delay, name, a, pan));
+    }
 
     // --- Setup ---
 
@@ -204,6 +234,7 @@ public abstract class Scene {
     // --- Rendering ---
 
     private void renderFrame() {
+        clock = frameCount / (double) FPS;
         if (useGradientBackground) {
             RadialGradient gradient = new RadialGradient(
                 0, 0,
@@ -238,17 +269,21 @@ public abstract class Scene {
                 System.err.println("[Scene] Frame capture error: " + e.getMessage());
             }
         }
+        frameCount++;
     }
 
     // --- Execution ---
 
     public void render() {
+        int oldW = WIDTH, oldH = HEIGHT;
+        WIDTH = canvasWidth();
+        HEIGHT = canvasHeight();
         canvas = new Canvas(WIDTH, HEIGHT);
         gc = canvas.getGraphicsContext2D();
         gc.setFont(Font.font("SansSerif", 24));
 
         try {
-            videoRenderer = new VideoRenderer(WIDTH, HEIGHT, FPS, outputPath);
+            videoRenderer = new VideoRenderer(WIDTH, HEIGHT, FPS, outputPath, videoBitrate());
             videoRenderer.start();
             recording = true;
 
@@ -257,11 +292,15 @@ public abstract class Scene {
 
             videoRenderer.stop();
             recording = false;
+            if (!sfxEvents.isEmpty()) AudioMux.mux(outputPath, sfxEvents, frameCount / (double) FPS);
             System.out.println("[Scene] Done. Video saved to " + outputPath);
 
         } catch (Exception e) {
             System.err.println("[Scene] Rendering error: " + e.getMessage());
             e.printStackTrace();
+        } finally {
+            WIDTH = oldW;
+            HEIGHT = oldH;
         }
     }
 

@@ -13,17 +13,21 @@
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/animations/Transform.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/animations/Write.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/core/Animation.java
+/Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/core/AudioMux.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/core/MObject.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/core/Scene.java
+/Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/core/Sfx.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/core/VideoRenderer.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/generator/AutoSceneBuilder.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/mobjects/ArrayMob.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/mobjects/ArrowMob.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/mobjects/CircleMob.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/mobjects/CodeBlock.java
+/Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/mobjects/Confetti.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/mobjects/CubeGrid3D.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/mobjects/LaTeXMob.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/mobjects/LinkedListMob.java
+/Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/mobjects/PixelSlime.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/mobjects/RectMob.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/mobjects/StackMob.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/mobjects/StrokeTextMob.java
@@ -44,6 +48,7 @@
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSDictionaryScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSGraphScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSHeapSortScene.java
+/Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSInsertionPixelScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSInsertionSortScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSIntroScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSLinkedListScene.java
@@ -76,6 +81,7 @@
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSListTraverseScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSMatricesScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSMergeSortScene.java
+/Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSPixelBase.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSPriorityQueueScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSQueensScene.java
 /Users/karthikedubilli/Desktop/Acads/CS5013/lecviz/src/main/java/com/lecviz/scenes/PDSQuickSortScene.java

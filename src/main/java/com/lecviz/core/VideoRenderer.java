@@ -23,12 +23,18 @@ public class VideoRenderer {
     private FFmpegFrameRecorder recorder;
     private Java2DFrameConverter converter;
     private int frameCount = 0;
+    private final int bitrate;
 
     public VideoRenderer(int width, int height, int fps, String outputPath) {
+        this(width, height, fps, outputPath, 20_000_000);
+    }
+
+    public VideoRenderer(int width, int height, int fps, String outputPath, int bitrate) {
         this.width = width;
         this.height = height;
         this.fps = fps;
         this.outputPath = outputPath;
+        this.bitrate = bitrate;
     }
 
     public void start() throws Exception {
@@ -42,7 +48,7 @@ public class VideoRenderer {
         recorder.setFrameRate(fps);
         recorder.setPixelFormat(org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_YUV420P);
         recorder.setVideoOption("profile", "high");
-        recorder.setVideoBitrate(20_000_000); // ~20 Mbps — generous for crisp flat color + text at 1080p60
+        recorder.setVideoBitrate(bitrate); // default ~20 Mbps — generous for crisp flat color + text at 1080p60
         recorder.start();
 
         converter = new Java2DFrameConverter();

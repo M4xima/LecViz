@@ -350,6 +350,9 @@ public abstract class PDSSortClipBase extends Scene {
 
     protected static Spec ln(int level, String text) { return new Spec(level, text); }
 
+    /** Called as a slide line starts being written (level as in {@link Spec}); a clip can add sound here. */
+    protected void lineStart(int level, double secs) {}
+
     /** The slide heading, written in the pen-stroke style. */
     protected StrokeTextMob writeHeading(String text) {
         StrokeTextMob h = stroke(text, 0, -470, 54, Colors.WHITE, true);
@@ -409,6 +412,7 @@ public abstract class PDSSortClipBase extends Scene {
             double secs = Math.max(1.2, sp.text.length() * (mainSize ? 0.06 : 0.045));
             start.add(new Write(t, d(secs)));
             group.add(t);
+            lineStart(sp.level, d(secs));
             playAll(start);
 
             if (sp.tail != null) {
