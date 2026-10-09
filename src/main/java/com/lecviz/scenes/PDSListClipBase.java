@@ -611,7 +611,7 @@ public abstract class PDSListClipBase extends PDSSortClipBase {
 
     protected TextMob monoLeft(String text, double x, double y, double size, Color c) {
         TextMob t = label(text, x, y, size, c, true, false);
-        t.setFontFamily("Menlo");
+        t.setFontFamily(MONO);
         return t;
     }
 
@@ -827,7 +827,7 @@ public abstract class PDSListClipBase extends PDSSortClipBase {
     /** Monospaced label (code-like text). */
     protected TextMob mono(String text, double x, double y, double size, Color c) {
         TextMob t = label(text, x, y, size, c, false, false);
-        t.setFontFamily("Menlo");
+        t.setFontFamily(MONO);
         return t;
     }
 
