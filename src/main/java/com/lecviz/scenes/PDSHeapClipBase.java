@@ -62,6 +62,7 @@ public abstract class PDSHeapClipBase extends PDSTreeClipBase {
 
     protected final class El {
         int v, idx;
+        String shown;             // what the circle and the cell say, when it is not just the number
         Color color;
         final CircleMob shape;
         final TextMob text;
@@ -81,6 +82,8 @@ public abstract class PDSHeapClipBase extends PDSTreeClipBase {
             text = label(String.valueOf(v), h.px(idx), h.py(idx), h.fs, Colors.WHITE, false, true);
             cell = h.arr ? new Cell(String.valueOf(v), h.ax(idx), h.ay, h.cw - 8, h.ch, c, h.fs * 0.8) : null;
         }
+
+        String nm() { return shown != null ? shown : String.valueOf(v); }
 
         List<MObject> parts() {
             List<MObject> l = new ArrayList<>();
@@ -131,6 +134,7 @@ public abstract class PDSHeapClipBase extends PDSTreeClipBase {
         final List<MObject> frame = new ArrayList<>();
         int n;
         boolean cellsOn = true;   // false: elements appear without their array cells (see flatten)
+        boolean min;              // true: a MinHeap (the smaller key is above)
 
         /**
          * @param levels how many tree levels have room (positions 1 .. 2^levels - 1)
@@ -173,6 +177,9 @@ public abstract class PDSHeapClipBase extends PDSTreeClipBase {
             }
         }
 
+        /** True when a belongs above b in this heap. */
+        boolean higher(int a, int b) { return min ? a < b : a > b; }
+
         double lv(int i) { return 31 - Integer.numberOfLeadingZeros(i); }
 
         double px(int i) {
@@ -198,6 +205,15 @@ public abstract class PDSHeapClipBase extends PDSTreeClipBase {
             a[i] = e;
             if (i > n) n = i;
             all.addAll(e.parts());
+            return e;
+        }
+
+        /** Like make, but the circle and the cell say {@code shown} (for example 7.31 for the key 731). */
+        El makeLabeled(int v, String shown, int i, Color c) {
+            El e = make(v, i, c);
+            e.shown = shown;
+            e.text.setText(shown);
+            if (e.cell != null) e.cell.text.setText(shown);
             return e;
         }
 
@@ -321,18 +337,36 @@ public abstract class PDSHeapClipBase extends PDSTreeClipBase {
 
     // ── insert: first empty leaf, percolate up ───────────────────────
 
+    /** The words of the comparison, for a MaxHeap or a MinHeap. */
+    private static String bigger(HV h) { return h.min ? "smaller" : "larger"; }
+
+    private static String gt(HV h) { return h.min ? "<" : ">"; }
+
+    private static String lt(HV h) { return h.min ? ">" : "<"; }
+
     /**
-     * insert(v): the new element appears at the first empty leaf (index n + 1) and percolates up while it is larger than
-     * its parent. {@code sp} scales the pauses (1 = relaxed, 0.5 = quick). Returns the element.
+     * insert(v): the new element appears at the first empty leaf (index n + 1) and percolates up while it beats its
+     * parent. {@code sp} scales the pauses (1 = relaxed, 0.5 = quick). Returns the element.
      */
-    protected El heapInsert(HV h, int v, double sp, boolean explain) {
+    protected El heapInsert(HV h, int v, double sp, boolean explain) { return heapInsert(h, v, null, sp, explain); }
+
+    protected El heapInsert(HV h, int v, String shown, double sp, boolean explain) {
         int i = h.n + 1;
-        El e = h.make(v, i, NEW_C);
-        if (explain) narr("insert(" + v + "): put it at the first empty leaf, index " + i + ".", Colors.LIGHT_GRAY);
+        El e = shown == null ? h.make(v, i, NEW_C) : h.makeLabeled(v, shown, i, NEW_C);
+        if (explain) narr("insert(" + e.nm() + "): put it at the first empty leaf, index " + i + ".", Colors.LIGHT_GRAY);
         List<Animation> an = new ArrayList<>();
         h.showAnim(an, e, 0, d(0.6));
         playAll(an);
         pause(0.5 * sp);
+        percolateUp(h, i, sp, explain);
+        h.paint(e, OK_C, d(0.4));
+        pause(0.5 * sp);
+        return e;
+    }
+
+    /** The element at index i climbs while it beats its parent; returns the index where it stops. */
+    protected int percolateUp(HV h, int i, double sp, boolean explain) {
+        El e = h.a[i];
         while (i > 1) {
             int p = i / 2;
             El pe = h.a[p];
@@ -340,10 +374,11 @@ public abstract class PDSHeapClipBase extends PDSTreeClipBase {
             List<Animation> f = new ArrayList<>();
             h.paintAnim(f, pe, CMP_C, d(0.25));
             playAll(f);
-            if (explain) narr(v + " vs its parent " + pe.v + " (index " + i + " / 2 = " + p + "): " + (v > pe.v ? v + " is larger" : v + " is smaller"), Colors.ORANGE);
+            boolean up = h.higher(e.v, pe.v);
+            if (explain) narr(e.nm() + " vs its parent " + pe.nm() + " (index " + i + " / 2 = " + p + "): " + e.nm() + " is " + (up ? bigger(h) : (h.min ? "larger" : "smaller")), Colors.ORANGE);
             pause(0.55 * sp);
-            if (v > pe.v) {
-                if (explain) narr(v + " > " + pe.v + ": swap them, and look at the next parent.", Colors.PINK);
+            if (up) {
+                if (explain) narr(e.nm() + " " + gt(h) + " " + pe.nm() + ": swap them, and look at the next parent.", Colors.PINK);
                 List<Animation> s = new ArrayList<>();
                 h.swapAnim(s, i, p, d(0.6));
                 h.paintAnim(s, pe, NODE_C, d(0.4));
@@ -353,27 +388,78 @@ public abstract class PDSHeapClipBase extends PDSTreeClipBase {
                 pause(0.3 * sp);
             } else {
                 h.paint(pe, NODE_C, d(0.25));
-                if (explain) narr(v + " < " + pe.v + ": the parent is larger, so " + v + " stays. Heap order holds.", Colors.GREEN);
+                if (explain) narr(e.nm() + " " + lt(h) + " " + pe.nm() + ": the parent is " + bigger(h) + ", so " + e.nm() + " stays. Heap order holds.", Colors.GREEN);
                 break;
             }
         }
-        if (i == 1 && explain) narr(v + " reached the root: nothing is above it, so it is the new maximum.", Colors.GREEN);
-        h.paint(e, OK_C, d(0.4));
-        pause(0.5 * sp);
-        return e;
+        if (i == 1 && explain) narr(e.nm() + " reached the root: nothing is above it, so it is the new " + (h.min ? "minimum" : "maximum") + ".", Colors.GREEN);
+        return i;
+    }
+
+    /** The element at index i sinks while one of its children beats it (it swaps with the better child); returns where it stops. */
+    protected int percolateDown(HV h, int i, double sp, boolean explain) {
+        El e = h.a[i];
+        h.paint(e, NEW_C, d(0.3));
+        while (2 * i <= h.n) {
+            int c = 2 * i;
+            if (c + 1 <= h.n) {
+                tickCmp();
+                List<Animation> f = new ArrayList<>();
+                h.paintAnim(f, h.a[c], CMP_C, d(0.25));
+                h.paintAnim(f, h.a[c + 1], CMP_C, d(0.25));
+                playAll(f);
+                int big = h.higher(h.a[c + 1].v, h.a[c].v) ? c + 1 : c;
+                if (explain) narr("Children of " + e.nm() + ": " + h.a[c].nm() + " and " + h.a[c + 1].nm() + ". The " + (h.min ? "smaller" : "larger") + " is " + h.a[big].nm() + ".", Colors.ORANGE);
+                pause(0.6 * sp);
+                List<Animation> g = new ArrayList<>();
+                h.paintAnim(g, h.a[c], NODE_C, d(0.2));
+                h.paintAnim(g, h.a[c + 1], NODE_C, d(0.2));
+                playAll(g);
+                c = big;
+            }
+            El ce = h.a[c];
+            tickCmp();
+            if (h.higher(ce.v, e.v)) {
+                if (explain) narr(ce.nm() + " " + gt(h) + " " + e.nm() + ": swap them.", Colors.PINK);
+                List<Animation> s = new ArrayList<>();
+                h.swapAnim(s, i, c, d(0.6));
+                playAll(s);
+                tickMove();
+                i = c;
+                pause(0.3 * sp);
+            } else {
+                if (explain) narr(ce.nm() + " " + lt(h) + " " + e.nm() + ": " + e.nm() + " stays. Heap order holds.", Colors.GREEN);
+                pause(0.4 * sp);
+                break;
+            }
+        }
+        if (explain && 2 * i > h.n) narr(e.nm() + " has no children left: it stops here.", Colors.GREEN);
+        h.paint(e, NODE_C, d(0.3));
+        return i;
+    }
+
+    /** buildHeap on elements already placed in any order: percolate down from the last parent (index n / 2) up to the root. */
+    protected void buildHeap(HV h, double sp, boolean explain) {
+        for (int i = h.n / 2; i >= 1; i--) {
+            if (explain) narr("Fix the subtree whose root is at index " + i + " (" + h.a[i].nm() + ").", Colors.LIGHT_GRAY);
+            pause(0.5 * sp);
+            percolateDown(h, i, sp, explain);
+            pause(0.3 * sp);
+        }
     }
 
     // ── deleteMax: remove the root, percolate the hole down, fill it with the last element ──
 
     /**
-     * deleteMax: the root goes, the hole percolates down (the larger child moves up) for as long as the last element is
-     * smaller than that child, and the last element finally fills the hole. Returns the removed value.
+     * deleteMax (deleteMin in a MinHeap): the root goes, the hole percolates down (the better child moves up) for as long
+     * as the last element does not beat that child, and the last element finally fills the hole. Returns the removed key.
      */
     protected int heapDeleteMax(HV h, double sp, boolean explain) {
         int n = h.n;
         El root = h.a[1];
         int removed = root.v;
-        if (explain) narr("deleteMax: the maximum, " + removed + ", is the root. Remove it.", Colors.LIGHT_GRAY);
+        String op = h.min ? "deleteMin" : "deleteMax";
+        if (explain) narr(op + ": the " + (h.min ? "minimum" : "maximum") + ", " + root.nm() + ", is the root. Remove it.", Colors.LIGHT_GRAY);
         if (n == 1) {
             List<Animation> an = new ArrayList<>();
             h.hideAnim(an, root, false, d(0.6));
@@ -391,7 +477,7 @@ public abstract class PDSHeapClipBase extends PDSTreeClipBase {
         h.a[1] = null;
         playAll(an);
         pause(0.5 * sp);
-        if (explain) narr("Take the last element, " + last.v + " (index " + n + "): it will fill the hole in the end.", Colors.PINK);
+        if (explain) narr("Take the last element, " + last.nm() + " (index " + n + "): it will fill the hole in the end.", Colors.PINK);
         h.paint(last, NEW_C, d(0.4));
         pause(0.6 * sp);
         int m = n - 1;
@@ -404,8 +490,8 @@ public abstract class PDSHeapClipBase extends PDSTreeClipBase {
                 h.paintAnim(f, h.a[c], CMP_C, d(0.25));
                 h.paintAnim(f, h.a[c + 1], CMP_C, d(0.25));
                 playAll(f);
-                int big = h.a[c + 1].v > h.a[c].v ? c + 1 : c;
-                if (explain) narr("Children of the hole: " + h.a[c].v + " and " + h.a[c + 1].v + ". The larger is " + h.a[big].v + ".", Colors.ORANGE);
+                int big = h.higher(h.a[c + 1].v, h.a[c].v) ? c + 1 : c;
+                if (explain) narr("Children of the hole: " + h.a[c].nm() + " and " + h.a[c + 1].nm() + ". The " + bigger(h) + " is " + h.a[big].nm() + ".", Colors.ORANGE);
                 pause(0.6 * sp);
                 List<Animation> g = new ArrayList<>();
                 h.paintAnim(g, h.a[c], NODE_C, d(0.2));
@@ -415,8 +501,8 @@ public abstract class PDSHeapClipBase extends PDSTreeClipBase {
             }
             El ce = h.a[c];
             tickCmp();
-            if (last.v < ce.v) {
-                if (explain) narr(last.v + " < " + ce.v + ": " + ce.v + " moves up into the hole, the hole moves down.", Colors.PINK);
+            if (h.higher(ce.v, last.v)) {
+                if (explain) narr(last.nm() + " " + lt(h) + " " + ce.nm() + ": " + ce.nm() + " moves up into the hole, the hole moves down.", Colors.PINK);
                 List<Animation> mv = new ArrayList<>();
                 h.moveAnim(mv, ce, i, 0, d(0.65));
                 mv.add(new MoveTo(hole.shape, h.px(c), h.py(c), d(0.65)).setEasing(Easing.EASE_IN_OUT));
@@ -429,14 +515,14 @@ public abstract class PDSHeapClipBase extends PDSTreeClipBase {
                 i = c;
                 pause(0.35 * sp);
             } else {
-                if (explain) narr(last.v + " > " + ce.v + ": the hole stops here.", Colors.GREEN);
+                if (explain) narr(last.nm() + " " + gt(h) + " " + ce.nm() + ": the hole stops here.", Colors.GREEN);
                 pause(0.5 * sp);
                 break;
             }
         }
         if (explain && 2 * i > m) narr("The hole has no children left: it stops here.", Colors.GREEN);
         pause(0.4 * sp);
-        if (explain) narr("Now " + last.v + " fills the hole at index " + i + ".", Colors.PINK);
+        if (explain) narr("Now " + last.nm() + " fills the hole at index " + i + ".", Colors.PINK);
         List<Animation> fin = new ArrayList<>();
         h.moveAnim(fin, last, i, 70, d(0.9));
         fin.add(new FadeOut(hole.shape, d(0.8)));

@@ -141,6 +141,13 @@ public class LecVizApp extends Application {
         SCENES.put("pq_8", PDSPQDeleteScene::new);
         SCENES.put("pq_9to10", PDSPQClassworkScene::new);
         SCENES.put("pq_11", PDSPQDeleteSeriesScene::new);
+        SCENES.put("pq_12a", PDSPQKeysScene::new);
+        SCENES.put("pq_12b", PDSPQBuildScene::new);
+        SCENES.put("pq_13", PDSPQAppsScene::new);
+        SCENES.put("pq_14", PDSPQCodesScene::new);
+        SCENES.put("pq_15", PDSPQHuffmanIdeaScene::new);
+        SCENES.put("pq_16", PDSPQHuffmanScene::new);
+        SCENES.put("pq_17", PDSPQHeapsortScene::new);
     }
 
     @Override
