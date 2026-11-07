@@ -233,9 +233,12 @@ public abstract class PDSHashClipBase extends PDSAvlClipBase {
         }
 
         /** Appends key to the end of bucket b's chain. */
-        void add(int key, int b, Color c) {
+        void add(int key, int b, Color c) { add(String.valueOf(key), b, c); }
+
+        /** Appends a node with the given text (such as "3:4" for neighbour 3 with weight 4). */
+        void add(String text, int b, Color c) {
             int k = nodes.get(b).size();
-            List<MObject> chip = chip(String.valueOf(key), nx(k), y(b), 84, Math.min(54, pitch - 12), c, 28);
+            List<MObject> chip = chip(text, nx(k), y(b), 84, Math.min(54, pitch - 12), c, 28);
             double fromX = k == 0 ? x0 + 38 : nx(k - 1) + 42, toX = nx(k) - 44;
             Link l = arrow(fromX, y(b), toX, y(b), Colors.LIGHT_GRAY, 3);
             List<Animation> a = new ArrayList<>();

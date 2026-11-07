@@ -5,12 +5,20 @@ LecViz turns lecture slides into short animated videos in the style of
 (JavaFX canvas + JavaCV/FFmpeg) and was built for Prof. Rupesh Nasre's **Programming and Data Structures (PDS)**
 course at IIT Madras (CS5013 project, by Karthik CS23B018 and Tejaswi CS23B023).
 
-So far it has produced **two complete decks**, one clip per sub-topic, every slide covered:
+So far it has produced **all eight decks of the course**, one clip per sub-topic, every slide covered:
 
-| Deck | Slides | Clips | Length | Folder |
-|---|---|---|---|---|
-| Arrays (`lectures/3-arrays.pdf`) | 1–31 | 19 | 44 min 53 s | `output/arrays/` |
-| Lists, stacks and queues (`lectures/4-lists.pdf`) | 1–48 | 26 | about 54 min | `output/lists/` |
+| Deck | Slides | Clips | Length | Folder | Key prefix |
+|---|---|---|---|---|---|
+| Intro and logistics (`lectures/0-intro+logistics.pdf`) | 1–12 | 5 | 6 min 45 s | `output/intro/` | `intro_` |
+| Complexity (`lectures/2-complexity.pdf`) | 1–27 | 15 | 12 min 30 s | `output/complexity/` | `cx_` |
+| Arrays (`lectures/3-arrays.pdf`) | 1–31 | 19 | 44 min 52 s | `output/arrays/` | `array_` |
+| Lists, stacks and queues (`lectures/4-lists.pdf`) | 1–48 | 26 | 54 min 16 s | `output/lists/` | `list_` |
+| Trees (`lectures/5-trees.pdf`) | all | 34 | 52 min 36 s | `output/trees/` | `tree_` |
+| Dictionary: BST, AVL, splay, hash tables (`lectures/6-dictionary.pdf`) | 1–90 | 72 | 77 min 38 s | `output/dictionary/` | `dict_` |
+| Priority queues (`lectures/7-priorityqueues.pdf`) | all | 15 | not re-measured here | `output/pq/` | `pq_` |
+| Graphs (`lectures/8-graphs.pdf`) | 1–30 | 24 | 27 min 19 s | `output/graphs/` | `graph_` |
+
+(`output/pixel/` holds three extra clips with the `pixel_` prefix.)
 
 Everything is 1920×1080 at 60 fps. Text is written in the pen-stroke style (the outline is traced, then filled from
 left to right), code is typed in and walked through with a highlight bar, and every algorithm runs on a live picture
@@ -27,12 +35,12 @@ To watch a whole deck as one video, join the clips (no re-encoding, a few second
 
 ```bash
 ./combine.sh arrays          # Windows: combine.bat arrays
-./combine.sh lists
+./combine.sh lists           # any folder under output/ works: trees, dictionary, graphs, complexity, intro, pq
 ```
 
-This writes `output/combined/arrays_full.mp4` and `output/combined/lists_full.mp4`. These files are about 0.8 GB and
-1.2 GB, which is over GitHub's 100 MB file limit, so `output/combined/` is git-ignored and is not stored in the
-repository. The full arrays video is also attached to the GitHub release `arrays-full-v1` (visible to people who have
+This writes `output/combined/<folder>_full.mp4` (for arrays and lists about 0.8 GB and 1.2 GB; the later decks are
+of the same order). These files are over GitHub's 100 MB file limit, so `output/combined/` is git-ignored and is not
+stored in the repository. The full arrays video is also attached to the GitHub release `arrays-full-v1` (visible to people who have
 access to this repository).
 
 ### Arrays clips (`output/arrays/`)
@@ -73,6 +81,46 @@ access to this repository).
 | `list_43to44`, `list_45to46` | 43–46 | Queue on an array, wrap-around, empty vs full |
 | `list_47`, `list_48` | 47–48 | Practice problems with solutions, outcomes, end card |
 
+### Dictionary clips (`output/dictionary/`, slides 1–90)
+
+| Clips | Slides | Topic |
+|---|---|---|
+| `dict_1to2` … `dict_24b` | 1–24 | Binary search trees: search, insert, orders, remove (three cases), complexity, exercises |
+| `dict_25to26` … `dict_48` | 25–48 | AVL trees: balance factors, the four rotation cases, insertion and deletion run for real |
+| `dict_49` … `dict_66` | 49–66 | Splay trees: move to root, zig / zig-zig / zig-zag, amortized analysis |
+| `dict_67` … `dict_90` | 67–90 | Hash tables: hash functions, collisions, chaining, linear / quadratic / double probing, outcomes, end card |
+
+### Graph clips (`output/graphs/`, slides 1–30)
+
+| Clips | Slides | Topic |
+|---|---|---|
+| `graph_1to2`, `graph_3`, `graph_4`, `graph_5to6`, `graph_7to8` | 1–8 | Title, what a graph is, nomenclature, relations, the 1822 puzzle |
+| `graph_9` … `graph_13` | 9–13 | Adjacency matrix and list, edge list and CSR, the classwork, primitive and high-level operations |
+| `graph_14` … `graph_19` | 14–19 | Traversals, BFS and DFS (queue, call stack, the BFS and DFS trees), their code, directory listing |
+| `graph_20` … `graph_30` | 20–30 | Topological sort (Kahn), Euler tours, Hamiltonian cycle, practice problems, outcomes, end card |
+
+### Complexity clips (`output/complexity/`, slides 1–27)
+
+`cx_1to3` (title, algorithms, efficiency), `cx_4` (misconceptions), `cx_5to7` (counted operations), `cx_8to9` (big O
+drawn), `cx_10to11` (examples, the recurrence), `cx_12to13` (the family of symbols), `cx_14` (complexity arithmetic),
+`cx_15to16` (typical complexities, limit test), `cx_17` (facets), `cx_18to19`, `cx_20to22`, `cx_23`, `cx_24` (the
+maximum subsequence sum, three algorithms), `cx_25to26` (binary search), `cx_27` (exercises, end card).
+
+### Intro clips (`output/intro/`, slides 1–12)
+
+`intro_1` (title), `intro_2to3` (placement, the cab example), `intro_4to5` (more examples, misconceptions),
+`intro_6to8` (what it is, the standard structures, outcomes), `intro_9to12` (logistics, evaluation, how to get the
+most, end card).
+
+### What the clips add to, or correct in, the slides
+
+- Everything on a table, order or count comes from running the algorithm on a small model, so a few of the deck's
+  own figures are corrected on the screen with a grey note: the graph slides leave out the edge 4–5 in the lists and
+  4–0 in the edge list; the splay "adversary" slide says access 2 costs N−2 links, the run shows 4.
+- One-line reasons and corrections were added to the pitfall and misconception slides (marked "added"), the BST
+  slide 4 `remove()` signature is fixed, and the unanswered slides 23–24 of the dictionary deck are answered.
+- The lyrics on slide 7 of the graph deck are not reproduced (the clip describes them).
+
 Slides 9, 11, 12 and 28 of the lists deck have no clip (a file-name-only slide, a missing number, a quiz slide, and a
 file-name-only slide).
 
@@ -84,7 +132,8 @@ file-name-only slide).
 lecviz/
 ├── lectures/                 The course slides (PDF)
 ├── output/
-│   ├── arrays/  lists/       Finished clips (tracked in git)
+│   ├── arrays/ lists/ trees/ pq/ dictionary/ graphs/ complexity/ intro/ pixel/
+│   │                         Finished clips (tracked in git), one folder per deck
 │   └── combined/             Joined full videos (git-ignored)
 ├── docs/new-slides-prompt.md A prompt + code guide for making clips from new slides
 ├── combine.sh, combine.bat   Join the clips of one folder into one video
@@ -98,7 +147,12 @@ lecviz/
     ├── scenes/
     │   ├── PDSSortClipBase   Shared kit: slide text, tables, code boxes, pointers, bars
     │   ├── PDSListClipBase   Kit for nodes, links, stacks, queues, call stacks, trees (extends the above)
-    │   └── PDS*Scene         One scene class per clip
+    │   ├── PDSTreeClipBase   General trees (GN nodes, GT drawing)             <- PDSListClipBase
+    │   ├── PDSDictClipBase   Binary search trees (insert, find, remove)       <- PDSTreeClipBase
+    │   ├── PDSAvlClipBase    DT engine: rotations, AVL rebalancing, splaying  <- PDSDictClipBase
+    │   ├── PDSHashClipBase   Hash cells, probing, chained buckets, histograms <- PDSAvlClipBase
+    │   ├── PDSGraphClipBase  Graph model G, graph picture GV, Grid, Seq       <- PDSHashClipBase
+    │   └── PDS*Scene         One scene class per group of clips (the part is the constructor argument)
     ├── parser/, generator/   An early attempt to build videos straight from slides (not used for the clips)
     └── LecVizApp.java        The scene registry (SCENES map) and the render entry point
 ```
@@ -138,8 +192,10 @@ Every clip is one scene class registered under a key in `LecVizApp.java`. The ke
 mvn -q exec:java -Dexec.mainClass=com.lecviz.LecVizApp -Dexec.args="list_21"
 ```
 
-Keys starting with `array_` are written to `output/arrays/` and keys starting with `list_` to `output/lists/`
-(anything else goes to `output/`). Rendering runs at about real time, so a 3-minute clip takes about 3 minutes.
+The key prefix decides the folder: `array_` goes to `output/arrays/`, `list_` to `output/lists/`, `pixel_` to
+`output/pixel/`, `tree_` to `output/trees/`, `pq_` to `output/pq/`, `dict_` to `output/dictionary/`, `graph_` to
+`output/graphs/`, `cx_` to `output/complexity/` and `intro_` to `output/intro/` (anything else goes to `output/`).
+`mvn exec:java` does not compile: run `mvn -q compile` after every edit and before rendering. Rendering runs at about real time, so a 3-minute clip takes about 3 minutes.
 Do not compile while a render is running.
 
 Each clip is kept under about 95 MiB (GitHub rejects files over 100 MiB); a clip that would be bigger is split into
@@ -183,6 +239,10 @@ SCENES.put("list_99", MyScene::new);   // in LecVizApp.java
 - **`PDSSortClipBase`**: timing (`d`, `pause`), pen-stroke text (`stroke`, `strokeLeft`, `writeHeading`, `dropHeading`,
   `writeSlide`, `swipeAway`), plain labels, tables (`dropTable`), code boxes with a moving highlight (`CodeBox`),
   callouts, pointers, and bar charts (`Bars`).
+- **The later kits** build on it: `PDSTreeClipBase` (general trees), `PDSDictClipBase` (binary search trees),
+  `PDSAvlClipBase` (a dynamic tree `DT` that really inserts, deletes, rotates and splays), `PDSHashClipBase` (table
+  cells with real open-addressing probes, chained buckets, histograms) and `PDSGraphClipBase` (a graph model `G`, its
+  picture `GV` with lit nodes and traced edges, boxed tables `Grid`, queue/stack chips `Seq`).
 - **`PDSListClipBase`**: list nodes with pointer cells (`LNode`), arrows that re-route while nodes move (`Link`),
   rows, boxed values (`Cell`), a step counter (`Steps`), stacks with a moving top (`VStack`), call stacks
   (`CallStack`), expression trees (`TNode`), chips, panels and one-line narration (`sayAt`).

@@ -8,7 +8,9 @@ This file has three parts:
 
 The prompt below holds every style and workflow rule that was settled while making the 19 array clips
 (Prof. Nasre's `3-arrays.pdf`, 44 min 53 s in total) and the 26 linked-list, stack and queue clips
-(`4-lists.pdf`, about 54 min). Section 7 lists what the second deck added.
+(`4-lists.pdf`, about 54 min). Section 7 lists what the second deck added, and section 8 what the six later decks
+(trees, priority queues, dictionary, graphs, complexity, intro) taught: how to compute instead of draw, the kit
+chain, layout limits, copyright, and the build and git traps.
 
 ---
 
@@ -189,6 +191,57 @@ the clip unchanged.
 - Colors: one color per stack/queue/value family across a whole clip (for example 1 teal, 2 blue, 3 pink,
   4 gold) so the same element can be followed from picture to picture.
 
+### 8. What the later decks added (trees, priority queues, dictionary, graphs, complexity, intro)
+
+**Compute, do not draw by hand.** Every order, count, table, threshold and ratio on the screen comes from running
+the algorithm on a small model of the data: BFS/DFS orders and trees, Kahn's order, in-degrees, the AVL
+rotations, splay steps, hash probes and collision counts, the Euler tour (each cycle of the slide is checked
+against the graph and the claims "first vertex with unvisited edges = 4, 3, 9" are asserted), the formula
+`(N^3 + 3N^2 + 2N) / 6` against a counted loop, `n0` of a big-O picture, the number of looks of binary search.
+If a check fails the scene throws, so a wrong slide claim or a wrong animation shows up at render time.
+
+**When a slide and the computation disagree, show the computation and say so on the screen.** Examples already
+handled: the graph slides leave out the edge 4-5 in the lists and 4-0 in the edge list (the clips store each
+undirected edge from both ends and add a small grey note); the splay adversary slide says "N-2 links" but access 2
+really costs 4 links; the pitfalls and misconception slides get one-line reasons marked "(added)". The final message
+lists every such addition and every slide left out.
+
+**Song lyrics are never reproduced** (slide 7 of the graph deck quotes a song): describe the content in your own
+words and say that the lyrics are not shown. A public-domain quotation (the 1822 newspaper item) may be typed.
+
+**The kit chain.** `PDSSortClipBase` (slide text, code boxes, bars) <- `PDSListClipBase` (nodes, links, stacks)
+<- `PDSTreeClipBase` (general trees `GN`/`GT`) <- `PDSDictClipBase` (binary search trees) <- `PDSAvlClipBase`
+(the `DT` engine: a hidden super-root lets rotations change the real root; it really inserts, deletes, rotates and
+splays) <- `PDSHashClipBase` (`HT` cells with real open-addressing probes, `CH` chains with `remove`, histograms)
+<- `PDSGraphClipBase` (`G` model, `GV` picture with lit nodes and traced edges, `Grid` of boxes, `Seq` of chips,
+helpers `say`, `tag`, `show`, `code`, `mark`/`dropSince`). Add to the newest kit, never copy helpers into a scene.
+One scene class holds a family of clips; its constructor argument is the slide range (`new PDSHashScene("82to84")`).
+
+**Layout limits found by frame checks.**
+- A typed slide holds about ten lines (a level-0 line plus its gap is about 60 px): more overflows the bottom edge.
+  Move the extra items to a later beat (for example the classwork prompts become tags after the pictures).
+- `Spec.kw(word)` must be a substring of **its own** line: a keyword on a continuation line throws
+  `StringIndexOutOfBoundsException` in `writeSlide`.
+- Centered tags are about 13 px per character at size 26: keep them under 55 characters or they run off the screen.
+- Keep the narration line at y = 440 and keep trees and tables above y = 400 (levels x gap).
+- A new heading with a text slide still on the screen needs `clearMine()` first, or the next code box lands on it.
+- Right-align row headers of a table (the kit's `Grid.headers` does) so long labels do not cross the first column.
+
+**Build and render.**
+- `mvn exec:java` does **not** compile: run `mvn -q compile` after every edit and never while a render is running.
+- Render a batch with one small script per clip (each clip is its own JVM) and look at a contact sheet per clip:
+  `ffmpeg -i clip.mp4 -vf "fps=1/N,scale=640:-1,tile=5x4" sheet.png` with the ffmpeg bundled by JavaCV.
+- The key prefix chooses the folder: `array_ list_ pixel_ tree_ pq_ dict_ graph_ cx_ intro_` (see `renderScene`).
+
+**Git.**
+- The repo uses a sparse checkout cone. A tracked folder outside the cone is **deleted from disk** by any
+  `git checkout`: first run `git sparse-checkout add output/<folder>` for every clip folder, and use
+  `git add --sparse output/<folder>/...` for new clips.
+- Large pushes over HTTPS die with HTTP 408. Commit about 40 MB of clips at a time and push each commit alone with
+  `-c pack.compression=0 -c core.compression=0 -c http.version=HTTP/1.1` (mp4 files do not compress).
+- Keep every clip under about 95 MiB; split a long clip, never compress it. Never push to `main` and open a pull
+  request only when asked.
+
 **Now:** read `lectures/<PDF NAME>.pdf` and propose the plan (section 1, step 2).
 
 ---
@@ -252,14 +305,16 @@ the helper scripts. You can copy the whole repo, or only the rows marked **neede
 Prerequisites: JDK 17 or newer and Maven. On macOS, run from the repo folder.
 
 ```bash
-# render one clip (key = the name registered in LecVizApp.java); array_* goes to output/arrays/, list_* to output/lists/
+# render one clip (key = the name registered in LecVizApp.java); the prefix picks the folder:
+# array_ -> output/arrays/, list_ -> lists/, tree_ -> trees/, pq_ -> pq/, dict_ -> dictionary/, graph_ -> graphs/,
+# cx_ -> complexity/, intro_ -> intro/   (run `mvn -q compile` first: exec:java does not compile)
 mvn -q exec:java -Dexec.mainClass=com.lecviz.LecVizApp -Dexec.args="array_16to17"
 mvn -q exec:java -Dexec.mainClass=com.lecviz.LecVizApp -Dexec.args="list_21"
 
 # put finished clips for a topic in output/<topic>/ , then join them in order
 ./combine.sh arrays        # Windows: combine.bat arrays
-./combine.sh lists
-# result: output/combined/arrays_full.mp4, output/combined/lists_full.mp4
+./combine.sh lists         # any folder under output/: trees, pq, dictionary, graphs, complexity, intro
+# result: output/combined/<folder>_full.mp4
 ```
 
 Rendering runs at about real time (a 3-minute clip takes about 3 minutes). A set the size of the arrays deck

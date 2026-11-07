@@ -225,6 +225,24 @@ public class LecVizApp extends Application {
         SCENES.put("dict_88", () -> new PDSHashScene("88"));
         SCENES.put("dict_89", () -> new PDSHashScene("89"));
         SCENES.put("dict_90", () -> new PDSHashScene("90"));
+
+        // graphs deck (8-graphs.pdf): one clip per sub-topic, named by the slide numbers it covers
+        for (String p : new String[]{"1to2", "3", "4", "5to6", "7to8"})
+            SCENES.put("graph_" + p, () -> new PDSGraphBasicsScene(p));
+        for (String p : new String[]{"9", "10", "11", "12", "13"})
+            SCENES.put("graph_" + p, () -> new PDSGraphReprScene(p));
+        for (String p : new String[]{"14", "15", "16", "17", "18", "19"})
+            SCENES.put("graph_" + p, () -> new PDSGraphTravScene(p));
+        for (String p : new String[]{"20", "21", "22", "23to26", "27", "28", "29", "30"})
+            SCENES.put("graph_" + p, () -> new PDSGraphAlgoScene(p));
+
+        // complexity deck (2-complexity.pdf)
+        for (String p : new String[]{"1to3", "4", "5to7", "8to9", "10to11", "12to13", "14", "15to16", "17", "18to19", "20to22", "23", "24", "25to26", "27"})
+            SCENES.put("cx_" + p, () -> new PDSCxScene(p));
+
+        // intro and logistics deck (0-intro+logistics.pdf)
+        for (String p : new String[]{"1", "2to3", "4to5", "6to8", "9to12"})
+            SCENES.put("intro_" + p, () -> new PDSIntroCourseScene(p));
     }
 
     @Override
@@ -339,7 +357,7 @@ public class LecVizApp extends Application {
 
     private void renderScene(String name, Scene scene) {
         // clips named array_* / list_* go straight into output/arrays/ and output/lists/
-        String folder = name.startsWith("array_") ? "arrays/" : name.startsWith("list_") ? "lists/" : name.startsWith("pixel_") ? "pixel/" : name.startsWith("tree_") ? "trees/" : name.startsWith("pq_") ? "pq/" : name.startsWith("dict_") ? "dictionary/" : "";
+        String folder = name.startsWith("array_") ? "arrays/" : name.startsWith("list_") ? "lists/" : name.startsWith("pixel_") ? "pixel/" : name.startsWith("tree_") ? "trees/" : name.startsWith("pq_") ? "pq/" : name.startsWith("dict_") ? "dictionary/" : name.startsWith("graph_") ? "graphs/" : name.startsWith("cx_") ? "complexity/" : name.startsWith("intro_") ? "intro/" : "";
         new java.io.File("output/" + folder).mkdirs();
         String outFile = "output/" + folder + name + ".mp4";
         System.out.printf("Rendering scene '%s' → %s%n", name, outFile);
