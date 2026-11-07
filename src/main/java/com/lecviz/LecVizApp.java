@@ -133,6 +133,21 @@ public class LecVizApp extends Application {
         SCENES.put("tree_34", PDSTreeShorterScene::new);
         SCENES.put("tree_35", PDSTreePrefixScene::new);
         SCENES.put("tree_36", PDSTreeEndScene::new);
+        SCENES.put("pq_1to2", PDSPQIntroScene::new);
+        SCENES.put("pq_3", PDSPQDefinitionScene::new);
+        SCENES.put("pq_4", PDSPQHeapScene::new);
+        SCENES.put("pq_5to6", PDSPQHeapExampleScene::new);
+        SCENES.put("pq_7", PDSPQInsertScene::new);
+        SCENES.put("pq_8", PDSPQDeleteScene::new);
+        SCENES.put("pq_9to10", PDSPQClassworkScene::new);
+        SCENES.put("pq_11", PDSPQDeleteSeriesScene::new);
+        SCENES.put("pq_12a", PDSPQKeysScene::new);
+        SCENES.put("pq_12b", PDSPQBuildScene::new);
+        SCENES.put("pq_13", PDSPQAppsScene::new);
+        SCENES.put("pq_14", PDSPQCodesScene::new);
+        SCENES.put("pq_15", PDSPQHuffmanIdeaScene::new);
+        SCENES.put("pq_16", PDSPQHuffmanScene::new);
+        SCENES.put("pq_17", PDSPQHeapsortScene::new);
 
         // dictionary deck (6-dictionary.pdf)
         SCENES.put("dict_1to2", PDSDictIntroScene::new);
@@ -273,7 +288,7 @@ public class LecVizApp extends Application {
 
     private void renderScene(String name, Scene scene) {
         // clips named array_* / list_* go straight into output/arrays/ and output/lists/
-        String folder = name.startsWith("array_") ? "arrays/" : name.startsWith("list_") ? "lists/" : name.startsWith("pixel_") ? "pixel/" : name.startsWith("tree_") ? "trees/" : name.startsWith("dict_") ? "dictionary/" : "";
+        String folder = name.startsWith("array_") ? "arrays/" : name.startsWith("list_") ? "lists/" : name.startsWith("pixel_") ? "pixel/" : name.startsWith("tree_") ? "trees/" : name.startsWith("pq_") ? "pq/" : name.startsWith("dict_") ? "dictionary/" : "";
         new java.io.File("output/" + folder).mkdirs();
         String outFile = "output/" + folder + name + ".mp4";
         System.out.printf("Rendering scene '%s' → %s%n", name, outFile);
