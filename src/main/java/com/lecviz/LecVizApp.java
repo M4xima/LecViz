@@ -148,6 +148,32 @@ public class LecVizApp extends Application {
         SCENES.put("pq_15", PDSPQHuffmanIdeaScene::new);
         SCENES.put("pq_16", PDSPQHuffmanScene::new);
         SCENES.put("pq_17", PDSPQHeapsortScene::new);
+
+        // dictionary deck (6-dictionary.pdf)
+        SCENES.put("dict_1to2", PDSDictIntroScene::new);
+        SCENES.put("dict_3", PDSDictDefinitionScene::new);
+        SCENES.put("dict_4", PDSDictAdtScene::new);
+        SCENES.put("dict_5", PDSDictSearchScene::new);
+        SCENES.put("dict_6", PDSDictFindMinScene::new);
+        SCENES.put("dict_7", PDSDictInsertScene::new);
+        SCENES.put("dict_8", PDSDictOrdersScene::new);
+        SCENES.put("dict_9", PDSDictInsertPropsScene::new);
+        SCENES.put("dict_10", PDSDictOrderQuizScene::new);
+        SCENES.put("dict_11", PDSDictRemoveScene::new);
+        SCENES.put("dict_12", PDSDictRemoveIdeaScene::new);
+        SCENES.put("dict_13", PDSDictSmallestScene::new);
+        SCENES.put("dict_14", PDSDictStrategyScene::new);
+        SCENES.put("dict_15", PDSDictRemoveExScene::new);
+        SCENES.put("dict_16", PDSDictClassworkScene::new);
+        SCENES.put("dict_17", PDSDictComplexityScene::new);
+        SCENES.put("dict_18", () -> new PDSDictAvgScene(18));
+        SCENES.put("dict_19", () -> new PDSDictAvgScene(19));
+        SCENES.put("dict_20", () -> new PDSDictAvgScene(20));
+        SCENES.put("dict_21", () -> new PDSDictAvgScene(21));
+        SCENES.put("dict_22", () -> new PDSDictAvgScene(22));
+        SCENES.put("dict_23", PDSDictQuestionsScene::new);
+        SCENES.put("dict_24a", () -> new PDSDictExercisesScene(1));
+        SCENES.put("dict_24b", () -> new PDSDictExercisesScene(2));
     }
 
     @Override
@@ -262,7 +288,7 @@ public class LecVizApp extends Application {
 
     private void renderScene(String name, Scene scene) {
         // clips named array_* / list_* go straight into output/arrays/ and output/lists/
-        String folder = name.startsWith("array_") ? "arrays/" : name.startsWith("list_") ? "lists/" : name.startsWith("pixel_") ? "pixel/" : name.startsWith("tree_") ? "trees/" : name.startsWith("pq_") ? "pq/" : "";
+        String folder = name.startsWith("array_") ? "arrays/" : name.startsWith("list_") ? "lists/" : name.startsWith("pixel_") ? "pixel/" : name.startsWith("tree_") ? "trees/" : name.startsWith("pq_") ? "pq/" : name.startsWith("dict_") ? "dictionary/" : "";
         new java.io.File("output/" + folder).mkdirs();
         String outFile = "output/" + folder + name + ".mp4";
         System.out.printf("Rendering scene '%s' → %s%n", name, outFile);
