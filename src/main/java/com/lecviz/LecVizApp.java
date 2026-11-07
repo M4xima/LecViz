@@ -174,6 +174,75 @@ public class LecVizApp extends Application {
         SCENES.put("dict_23", PDSDictQuestionsScene::new);
         SCENES.put("dict_24a", () -> new PDSDictExercisesScene(1));
         SCENES.put("dict_24b", () -> new PDSDictExercisesScene(2));
+        // dictionary deck, AVL trees (slides 25-48)
+        SCENES.put("dict_25to26", () -> new PDSAvlScene("25to26"));
+        SCENES.put("dict_27", () -> new PDSAvlScene("27"));
+        SCENES.put("dict_28", () -> new PDSAvlScene("28"));
+        SCENES.put("dict_29", () -> new PDSAvlScene("29"));
+        SCENES.put("dict_30", () -> new PDSAvlScene("30"));
+        SCENES.put("dict_31", () -> new PDSAvlScene("31"));
+        SCENES.put("dict_32to33", () -> new PDSAvlScene("32to33"));
+        SCENES.put("dict_34", () -> new PDSAvlScene("34"));
+        SCENES.put("dict_35", () -> new PDSAvlScene("35"));
+        SCENES.put("dict_36", () -> new PDSAvlScene("36"));
+        SCENES.put("dict_37to39", () -> new PDSAvlScene("37to39"));
+        SCENES.put("dict_40", () -> new PDSAvlScene("40"));
+        SCENES.put("dict_41", () -> new PDSAvlScene("41"));
+        SCENES.put("dict_42", () -> new PDSAvlScene("42"));
+        SCENES.put("dict_43", () -> new PDSAvlScene("43"));
+        SCENES.put("dict_44", () -> new PDSAvlScene("44"));
+        SCENES.put("dict_45to47", () -> new PDSAvlScene("45to47"));
+        SCENES.put("dict_48", () -> new PDSAvlScene("48"));
+        // dictionary deck, splay trees (slides 49-66)
+        SCENES.put("dict_49", () -> new PDSSplayScene("49"));
+        SCENES.put("dict_50", () -> new PDSSplayScene("50"));
+        SCENES.put("dict_51", () -> new PDSSplayScene("51"));
+        SCENES.put("dict_52", () -> new PDSSplayScene("52"));
+        SCENES.put("dict_53to54", () -> new PDSSplayScene("53to54"));
+        SCENES.put("dict_55", () -> new PDSSplayScene("55"));
+        SCENES.put("dict_56to59", () -> new PDSSplayScene("56to59"));
+        SCENES.put("dict_60", () -> new PDSSplayScene("60"));
+        SCENES.put("dict_61to62", () -> new PDSSplayScene("61to62"));
+        SCENES.put("dict_63to64", () -> new PDSSplayScene("63to64"));
+        SCENES.put("dict_65", () -> new PDSSplayScene("65"));
+        SCENES.put("dict_66", () -> new PDSSplayScene("66"));
+        // dictionary deck, hash tables (slides 67-90)
+        SCENES.put("dict_67", () -> new PDSHashScene("67"));
+        SCENES.put("dict_68to70", () -> new PDSHashScene("68to70"));
+        SCENES.put("dict_71to72", () -> new PDSHashScene("71to72"));
+        SCENES.put("dict_73", () -> new PDSHashScene("73"));
+        SCENES.put("dict_74", () -> new PDSHashScene("74"));
+        SCENES.put("dict_75", () -> new PDSHashScene("75"));
+        SCENES.put("dict_76to77", () -> new PDSHashScene("76to77"));
+        SCENES.put("dict_78", () -> new PDSHashScene("78"));
+        SCENES.put("dict_79", () -> new PDSHashScene("79"));
+        SCENES.put("dict_80", () -> new PDSHashScene("80"));
+        SCENES.put("dict_81", () -> new PDSHashScene("81"));
+        SCENES.put("dict_82to84", () -> new PDSHashScene("82to84"));
+        SCENES.put("dict_85", () -> new PDSHashScene("85"));
+        SCENES.put("dict_86", () -> new PDSHashScene("86"));
+        SCENES.put("dict_87", () -> new PDSHashScene("87"));
+        SCENES.put("dict_88", () -> new PDSHashScene("88"));
+        SCENES.put("dict_89", () -> new PDSHashScene("89"));
+        SCENES.put("dict_90", () -> new PDSHashScene("90"));
+
+        // graphs deck (8-graphs.pdf): one clip per sub-topic, named by the slide numbers it covers
+        for (String p : new String[]{"1to2", "3", "4", "5to6", "7to8"})
+            SCENES.put("graph_" + p, () -> new PDSGraphBasicsScene(p));
+        for (String p : new String[]{"9", "10", "11", "12", "13"})
+            SCENES.put("graph_" + p, () -> new PDSGraphReprScene(p));
+        for (String p : new String[]{"14", "15", "16", "17", "18", "19"})
+            SCENES.put("graph_" + p, () -> new PDSGraphTravScene(p));
+        for (String p : new String[]{"20", "21", "22", "23to26", "27", "28", "29", "30"})
+            SCENES.put("graph_" + p, () -> new PDSGraphAlgoScene(p));
+
+        // complexity deck (2-complexity.pdf)
+        for (String p : new String[]{"1to3", "4", "5to7", "8to9", "10to11", "12to13", "14", "15to16", "17", "18to19", "20to22", "23", "24", "25to26", "27"})
+            SCENES.put("cx_" + p, () -> new PDSCxScene(p));
+
+        // intro and logistics deck (0-intro+logistics.pdf)
+        for (String p : new String[]{"1", "2to3", "4to5", "6to8", "9to12"})
+            SCENES.put("intro_" + p, () -> new PDSIntroCourseScene(p));
     }
 
     @Override
@@ -288,7 +357,7 @@ public class LecVizApp extends Application {
 
     private void renderScene(String name, Scene scene) {
         // clips named array_* / list_* go straight into output/arrays/ and output/lists/
-        String folder = name.startsWith("array_") ? "arrays/" : name.startsWith("list_") ? "lists/" : name.startsWith("pixel_") ? "pixel/" : name.startsWith("tree_") ? "trees/" : name.startsWith("pq_") ? "pq/" : name.startsWith("dict_") ? "dictionary/" : "";
+        String folder = name.startsWith("array_") ? "arrays/" : name.startsWith("list_") ? "lists/" : name.startsWith("pixel_") ? "pixel/" : name.startsWith("tree_") ? "trees/" : name.startsWith("pq_") ? "pq/" : name.startsWith("dict_") ? "dictionary/" : name.startsWith("graph_") ? "graphs/" : name.startsWith("cx_") ? "complexity/" : name.startsWith("intro_") ? "intro/" : "";
         new java.io.File("output/" + folder).mkdirs();
         String outFile = "output/" + folder + name + ".mp4";
         System.out.printf("Rendering scene '%s' → %s%n", name, outFile);
